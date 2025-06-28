@@ -1,8 +1,9 @@
 'use client'
 import Layout from '../../components/Layout'
-import DataTable from '../../components/DataTable'
+import { PaginatedDataTable } from '../../components/DataTable'
 import { useEffect, useState } from 'react'
-import { getUsers, addDocument, updateDocument, deleteDocument, setAdminStatus } from '../../services/crud'
+import { getUsersPaginated, addDocument, updateDocument, deleteDocument, setAdminStatus } from '../../services/crud'
+import { PaginationParams, PaginatedResult } from '../../services/crud'
 
 interface User {
     id: string;
@@ -22,6 +23,10 @@ interface Column {
 export default function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [lastDoc, setLastDoc] = useState<any>(null);
+  const [totalCount, setTotalCount] = useState(0);
 
   const columns: Column[] = [
     {
@@ -42,12 +47,10 @@ export default function Users() {
         key: 'isAdmin',
         label: 'Admin',
         render: (_: any, row: User) => (
-          console.log(row),
             <button
               onClick={async (e) => {
                 e.stopPropagation();
                 try {
-                  console.log(row.id, !row.isAdmin)
                   await setAdminStatus(row.id, !row.isAdmin);
                   // Update local state
                   setUsers((prev: User[]) => prev.map((u: User) => u.id === row.id ? { ...u, isAdmin: !u.isAdmin } : u));
@@ -63,18 +66,37 @@ export default function Users() {
     }
 ];
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const usersData = await getUsers();
-        setUsers(usersData);
-      } catch (error) {
-        console.error('Error fetching users:', error);
-      } finally {
-        setLoading(false);
+  const fetchUsers = async (params?: PaginationParams) => {
+    try {
+      const result: PaginatedResult<User> = await getUsersPaginated(params || { pageSize: 10 });
+      
+      if (params?.lastDoc) {
+        // Loading more
+        setUsers(prev => [...prev, ...result.data]);
+      } else {
+        // Initial load
+        setUsers(result.data);
       }
-    };
+      
+      setLastDoc(result.lastDoc);
+      setHasMore(result.hasMore);
+      setTotalCount(prev => prev + result.data.length);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+    } finally {
+      setLoading(false);
+      setLoadingMore(false);
+    }
+  };
 
+  const loadMore = async () => {
+    if (!hasMore || loadingMore) return;
+    
+    setLoadingMore(true);
+    await fetchUsers({ pageSize: 10, lastDoc });
+  };
+
+  useEffect(() => {
     fetchUsers();
   }, []);
 
@@ -111,13 +133,17 @@ export default function Users() {
   return (
     <Layout>
       <div className="">
-        <DataTable
+        <PaginatedDataTable
           data={users}
           columns={columns}
           title="Users Management"
           editable={true}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          onLoadMore={loadMore}
+          hasMore={hasMore}
+          loading={loadingMore}
+          totalCount={totalCount}
         />
       </div>
     </Layout>

@@ -110,6 +110,7 @@ export default function Artists() {
                 defaultValue={editingItem?.name || ''}
                 className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
                 placeholder="Enter artist name"
+                id="edit-name"
               />
             </div>
             <div>
@@ -119,6 +120,7 @@ export default function Artists() {
                 defaultValue={editingItem?.artist_name || ''}
                 className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
                 placeholder="Enter username"
+                id="edit-artist_name"
               />
             </div>
             <div>
@@ -130,6 +132,7 @@ export default function Artists() {
                   : (typeof editingItem?.tags === 'string' ? editingItem.tags : '')}
                 className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
                 placeholder="landscape, nature, realistic"
+                id="edit-tags"
               />
             </div>
           </div>
@@ -141,7 +144,40 @@ export default function Artists() {
               Cancel
             </button>
             <button
-              onClick={() => { setShowModal(false); setEditingItem(null); }}
+              onClick={async () => {
+                const formData = {
+                  name: (document.getElementById('edit-name') as HTMLInputElement)?.value || '',
+                  artist_name: (document.getElementById('edit-artist_name') as HTMLInputElement)?.value || '',
+                  tags: (document.getElementById('edit-tags') as HTMLInputElement)?.value
+                    .split(',')
+                    .map((t: string) => t.trim())
+                    .filter(Boolean),
+                };
+                
+                if (editingItem) {
+                  // Update existing artist
+                  try {
+                    await updateDocument('artists', editingItem.id, formData);
+                    setArtists(artists.map(artist => 
+                      artist.id === editingItem.id ? { ...artist, ...formData } : artist
+                    ));
+                    setShowModal(false);
+                    setEditingItem(null);
+                  } catch (error) {
+                    console.error('Error updating artist:', error);
+                  }
+                } else {
+                  // Create new artist
+                  try {
+                    const newId = await addDocument('artists', formData);
+                    const newArtist = { id: newId, ...formData };
+                    setArtists([...artists, newArtist]);
+                    setShowModal(false);
+                  } catch (error) {
+                    console.error('Error creating artist:', error);
+                  }
+                }
+              }}
               className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
             >
               {editingItem ? 'Update' : 'Create'}

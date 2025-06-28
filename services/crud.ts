@@ -12,10 +12,24 @@ import {
   where,
   orderBy,
   limit,
+  startAfter,
+  QueryDocumentSnapshot,
   Timestamp,
   DocumentData,
   WithFieldValue
 } from 'firebase/firestore';
+
+// Pagination interface
+export interface PaginationParams {
+  pageSize: number;
+  lastDoc?: QueryDocumentSnapshot;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  lastDoc: QueryDocumentSnapshot | null;
+  hasMore: boolean;
+}
 
 export class CrudService<T extends WithFieldValue<DocumentData>> {
   constructor(private collectionName: string) {}
@@ -26,6 +40,34 @@ export class CrudService<T extends WithFieldValue<DocumentData>> {
       id: doc.id,
       ...doc.data()
     })) as (T & { id: string })[];
+  }
+
+  async getPaginated(params: PaginationParams): Promise<PaginatedResult<T & { id: string }>> {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, this.collectionName),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    })) as (T & { id: string })[];
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
   }
 
   async getOne(id: string) {
@@ -66,6 +108,39 @@ export const getCollection = async (collectionName: string) => {
   } catch (error) {
     console.error(`Error fetching ${collectionName}:`, error);
     return [];
+  }
+};
+
+export const getCollectionPaginated = async (collectionName: string, params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, collectionName),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error(`Error fetching ${collectionName}:`, error);
+    return { data: [], lastDoc: null, hasMore: false };
   }
 };
 
@@ -129,6 +204,46 @@ export const getUsers = async () => {
   }
 };
 
+export const getUsersPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'users'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        email: data.email || '',
+        displayName: data.displayName || '',
+        createdAt: data.createdAt,
+        photoURL: data.photoURL || '',
+        isAdmin: data.isAdmin || false
+      };
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    return { data: [], lastDoc: null, hasMore: false };
+  }
+};
+
 // Images specific operations
 export const getImages = async () => {
   try {
@@ -143,6 +258,39 @@ export const getImages = async () => {
   }
 };
 
+export const getImagesPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'images'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching images:', error);
+    return { data: [], lastDoc: null, hasMore: false };
+  }
+};
+
 // Products specific operations
 export const getProducts = async () => {
   try {
@@ -154,6 +302,39 @@ export const getProducts = async () => {
   } catch (error) {
     console.error('Error fetching products:', error);
     return [];
+  }
+};
+
+export const getProductsPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'products'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching products:', error);
+    return { data: [], lastDoc: null, hasMore: false };
   }
 };
 
@@ -180,6 +361,48 @@ export const getOrders = async () => {
   }
 };
 
+export const getOrdersPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'orders'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        orderId: doc.id, // Use document ID as orderId
+        userId: data.userId || '',
+        totalAmount: data.totalAmount || 0,
+        paymentStatus: data.paymentStatus || 'pending',
+        status: data.status || 'pending',
+        createdAt: data.createdAt,
+        shippingAddress: data.shippingAddress || { name: '', city: '', country: '' }
+      };
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return { data: [], lastDoc: null, hasMore: false };
+  }
+};
+
 // Home Images specific operations
 export const getHomeImages = async () => {
   try {
@@ -202,6 +425,47 @@ export const getHomeImages = async () => {
   }
 };
 
+export const getHomeImagesPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'home-images'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        title: data.title || '',
+        file_link: data.file_link || '',
+        aspect_ratio: data.aspect_ratio || '16:9',
+        dimensions: data.dimensions || '',
+        tags: data.tags || [],
+        suggested_locations: data.suggested_locations || []
+      };
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching home images:', error);
+    return { data: [], lastDoc: null, hasMore: false };
+  }
+};
+
 // Artists specific operations
 export const getArtists = async () => {
   try {
@@ -221,6 +485,44 @@ export const getArtists = async () => {
   }
 };
 
+export const getArtistsPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'artists'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        artist_name: data.artist_name || '',
+        name: data.name || '',
+        tags: data.tags || []
+      };
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching artists:', error);
+    return { data: [], lastDoc: null, hasMore: false };
+  }
+};
+
 // Subjects specific operations
 export const getSubjects = async () => {
   try {
@@ -236,6 +538,43 @@ export const getSubjects = async () => {
   } catch (error) {
     console.error('Error fetching subjects:', error);
     return [];
+  }
+};
+
+export const getSubjectsPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'subjects'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        category: data.category || '',
+        subjects: data.subjects || []
+      };
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching subjects:', error);
+    return { data: [], lastDoc: null, hasMore: false };
   }
 };
 
@@ -343,6 +682,47 @@ export const getQueueItems = async () => {
   } catch (error) {
     console.error('Error fetching queue items:', error);
     return [];
+  }
+};
+
+export const getQueueItemsPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
+  try {
+    const { pageSize, lastDoc } = params;
+    
+    let q = query(
+      collection(db, 'orders-req'),
+      orderBy('createdAt', 'desc'),
+      limit(pageSize)
+    );
+
+    if (lastDoc) {
+      q = query(q, startAfter(lastDoc));
+    }
+
+    const querySnapshot = await getDocs(q);
+    const data = querySnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        orderId: data.orderId || '',
+        processed: data.processed || false,
+        createdAt: data.createdAt,
+        processedAt: data.processedAt,
+        status: data.processed ? 'completed' : 'queued',
+        priority: 'medium'
+      };
+    });
+
+    const lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+    
+    return {
+      data,
+      lastDoc: lastVisible || null,
+      hasMore: querySnapshot.docs.length === pageSize
+    };
+  } catch (error) {
+    console.error('Error fetching queue items:', error);
+    return { data: [], lastDoc: null, hasMore: false };
   }
 };
 
