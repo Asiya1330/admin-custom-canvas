@@ -70,7 +70,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-4 pb-24 max-h-[calc(100vh-10rem)] overflow-y-auto">
+      <nav className="p-4 space-y-4 max-h-[calc(100vh-10rem)] overflow-y-auto">
         {menuItems.map((item, index) => {
           const Icon = item.icon
           const isActive = pathname === item.href

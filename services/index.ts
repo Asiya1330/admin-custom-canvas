@@ -1,3 +1,5 @@
+
+'use client'
 import { CrudService } from './crud';
 import { authService } from './auth';
 
