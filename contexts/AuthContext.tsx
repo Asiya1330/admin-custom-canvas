@@ -1,5 +1,8 @@
 'use client'
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react'
+import { auth, db } from '../services/firebase';
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { doc, getDoc } from 'firebase/firestore';
 
 interface AdminUser {
   id: string;
@@ -12,7 +15,8 @@ interface AdminUser {
 interface AuthContextType {
   user: string | null;
   adminUsers: AdminUser[];
-  login: (email: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
+  loginWithGoogle: () => Promise<void>;
   logout: () => void;
   inviteUser: (email: string, role: string) => void;
   removeUser: (id: string) => void;
@@ -31,12 +35,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     { id: '2', name: 'John Doe', email: 'john@example.com', role: 'admin' },
   ]
 
-  const login = async (email: string) => {
+  const login = async (email: string, password: string) => {
     setLoading(true)
     try {
+      // Sign in with Firebase Auth
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      // Fetch user doc from Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists() || !userDoc.data().isAdmin) {
+        throw new Error('You do not have access to this portal.');
+      }
       // Store user in localStorage for persistence
       localStorage.setItem('adminUser', email)
       setUser(email)
+    } catch (err: any) {
+      throw new Error(err.message || 'Login failed. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loginWithGoogle = async () => {
+    setLoading(true)
+    try {
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+      // Fetch user doc from Firestore
+      const userDoc = await getDoc(doc(db, 'users', user.uid));
+      if (!userDoc.exists() || !userDoc.data().isAdmin) {
+        throw new Error('You do not have access to this portal.');
+      }
+      localStorage.setItem('adminUser', user.email || '');
+      setUser(user.email || null);
+    } catch (err: any) {
+      throw new Error(err.message || 'Google sign-in failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -77,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <AuthContext.Provider value={{ user, adminUsers, login, logout, inviteUser, removeUser, loading }}>
+    <AuthContext.Provider value={{ user, adminUsers, login, loginWithGoogle, logout, inviteUser, removeUser, loading }}>
       {children}
     </AuthContext.Provider>
   )

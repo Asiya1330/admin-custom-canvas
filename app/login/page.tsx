@@ -12,7 +12,7 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, loginWithGoogle } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -20,15 +20,14 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // Check if credentials match the allowed admin
-      if (email === 'asiya.batool987@gmail.com' && password === 'Computer@123') {
-        await login(email)
-        router.push('/')
+      await login(email, password)
+      router.push('/')
+    } catch (error: any) {
+      if (error.message === 'You do not have access to this portal.') {
+        setError('You do not have access to this portal.')
       } else {
         setError('Invalid email or password')
       }
-    } catch (error) {
-      setError('Login failed. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -95,6 +94,33 @@ export default function Login() {
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
+
+        <div className="mt-4">
+          <button
+            type="button"
+            onClick={async () => {
+              setError("");
+              setLoading(true);
+              try {
+                await loginWithGoogle();
+                router.push("/");
+              } catch (error: any) {
+                if (error.message === "You do not have access to this portal.") {
+                  setError("You do not have access to this portal.");
+                } else {
+                  setError("Google sign-in failed. Please try again.");
+                }
+              } finally {
+                setLoading(false);
+              }
+            }}
+            className="w-full py-3 bg-white text-gray-900 rounded-lg hover:bg-gray-200 transition-all duration-300 font-medium flex items-center justify-center space-x-2"
+            disabled={loading}
+          >
+            <Mail className="w-5 h-5 mr-2" />
+            <span>Sign in with Google</span>
+          </button>
+        </div>
 
         <div className="mt-8 text-center">
           <p className="text-gray-400 text-sm">

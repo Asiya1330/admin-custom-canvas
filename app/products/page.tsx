@@ -94,7 +94,7 @@ export default function Products() {
 
   return (
     <Layout>
-      <div className="p-8">
+      <div className="">
         <DataTable
           data={products}
           columns={columns}

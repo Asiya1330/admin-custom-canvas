@@ -79,7 +79,7 @@ export default function Images() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-4 md:p-8">
+        <div className=" ">
           <div className="flex items-center justify-center h-64">
             <div className="text-white">Loading images...</div>
           </div>
@@ -90,7 +90,7 @@ export default function Images() {
 
   return (
     <Layout>
-      <div className="p-4 md:p-8">
+      <div className=" ">
         <DataTable
           data={images}
           columns={columns}

@@ -107,7 +107,7 @@ export default function Subjects() {
 
   return (
     <Layout>
-      <div className="p-8">
+      <div className="">
         <DataTable
           data={subjects}
           columns={columns}

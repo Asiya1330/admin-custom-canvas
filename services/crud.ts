@@ -119,7 +119,8 @@ export const getUsers = async () => {
         email: data.email || '',
         displayName: data.displayName || '',
         createdAt: data.createdAt,
-        photoURL: data.photoURL || ''
+        photoURL: data.photoURL || '',
+        isAdmin: data.isAdmin || false
       };
     });
   } catch (error) {
@@ -433,5 +434,17 @@ export const getRecentActivity = async () => {
   } catch (error) {
     console.error('Error fetching recent activity:', error);
     return [];
+  }
+};
+
+// Set or unset admin status for a user
+export const setAdminStatus = async (userId: string, isAdmin: boolean) => {
+  try {
+    const userRef = doc(db, 'users', userId);
+    await updateDoc(userRef, { isAdmin });
+    return true;
+  } catch (error) {
+    console.error('Error updating admin status:', error);
+    throw error;
   }
 };

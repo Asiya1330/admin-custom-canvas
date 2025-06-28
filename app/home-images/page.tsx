@@ -133,7 +133,7 @@ export default function HomeImages() {
 
   return (
     <Layout>
-      <div className="p-8">
+      <div className="">
         <DataTable
           data={homeImages}
           columns={columns}

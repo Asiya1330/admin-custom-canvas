@@ -73,7 +73,7 @@ const handleSort = (field: string): void => {
 }
 
   return (
-    <div className="glass-effect rounded-2xl p-6 animate-fadeInUp">
+    <div className="glass-effect rounded-2xl animate-fadeInUp">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>

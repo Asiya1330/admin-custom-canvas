@@ -29,6 +29,8 @@ const getStatusIcon = (status: string) => {
   switch (status) {
     case 'completed':
       return <CheckCircle size={16} className="text-green-400" />;
+    case 'success':
+      return <CheckCircle size={16} className="text-green-400" />;
     case 'processing':
       return <Clock size={16} className="text-yellow-400" />;
     case 'failed':
@@ -54,6 +56,8 @@ const getPriorityColor = (priority: string) => {
 const getStatusColor = (status: string) => {
   switch (status) {
     case 'completed':
+      return 'bg-green-500/20 text-green-400';
+    case 'success':
       return 'bg-green-500/20 text-green-400';
     case 'processing':
       return 'bg-yellow-500/20 text-yellow-400';
@@ -99,7 +103,7 @@ export default function Queue() {
 
   return (
     <Layout>
-      <div className="p-8">
+      <div className="">
         <div className="mb-8 animate-fadeInUp">
           <h1 className="text-3xl font-bold text-white mb-2">Processing Queue</h1>
           <p className="text-gray-400">Monitor and manage order processing status.</p>
