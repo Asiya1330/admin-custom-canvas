@@ -5,6 +5,22 @@
   --foreground: #171717;
 }
 
+/* Custom scrollbar for whole website */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-thumb {
+  background: #2d2d3a; /* dark thumb */
+  border-radius: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2d2d3a transparent;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);

@@ -38,7 +38,7 @@ const menuItems: MenuItem[] = [
   { name: 'Subjects', href: '/subjects', icon: BookOpen, editable: true },
   { name: 'Processing Queue', href: '/queue', icon: Activity },
   { name: 'Admin Users', href: '/admin-users', icon: UserPlus },
-  { name: 'Settings1', href: '/settings', icon: Settings },
+  { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function Sidebar() {
@@ -70,7 +70,7 @@ export default function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="p-4 space-y-2">
+      <nav className="p-4 space-y-4 pb-24 max-h-[calc(100vh-10rem)] overflow-y-auto">
         {menuItems.map((item, index) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -98,7 +98,7 @@ export default function Sidebar() {
                     {item.name}
                   </span>
                   {item.editable && (
-                    <span className="ml-2 px-2 py-0.5 text-xs bg-green-500/20 text-green-400 rounded-full">
+                    <span className="ml-3 px-2 py-0.5 text-xs bg-green-500/20 text-green-400 rounded-full align-middle">
                       Editable
                     </span>
                   )}
