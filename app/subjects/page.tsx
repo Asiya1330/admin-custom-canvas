@@ -2,31 +2,17 @@
 import Layout from "../../components/Layout";
 import DataTable from "../../components/DataTable";
 import { useState, useEffect } from "react";
-import { getSubjects, deleteDocument } from "../../services/crud";
+import {
+  getSubjects,
+  deleteDocument,
+  updateDocument,
+} from "../../services/crud";
 
 interface Subject {
   id: string;
-  category: string;
-  subjects: string[];
+  category: string | undefined;
+  subjects: string | undefined;
 }
-
-const mockSubjects: Subject[] = [
-  {
-    id: "1",
-    category: "Nature",
-    subjects: ["Mountains", "Forests", "Oceans", "Deserts", "Rivers"],
-  },
-  {
-    id: "2",
-    category: "Urban",
-    subjects: ["Cityscapes", "Architecture", "Street Life", "Transportation"],
-  },
-  {
-    id: "3",
-    category: "Abstract",
-    subjects: ["Geometric", "Organic", "Minimalist", "Expressionist"],
-  },
-];
 
 interface Column {
   key: string;
@@ -40,7 +26,7 @@ const columns: Column[] = [
     key: "subjects",
     label: "Subjects",
     render: (value: string[] | string | undefined) => (
-      <div className="flex flex-wrap gap-1">
+      <div className="flex flex-nowrap gap-1 overflow-x-auto w-full">
         {(Array.isArray(value)
           ? value
           : typeof value === "string" && value
@@ -64,6 +50,24 @@ export default function Subjects() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Subject | null>(null);
   const [loading, setLoading] = useState(true);
+
+  const getTagsArray = (subjects: string) => {
+    if (Array.isArray(subjects)) return subjects;
+    if (typeof subjects === "string") {
+      try {
+        // Try to parse as JSON array
+        const parsed = JSON.parse(subjects);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {
+        // Fallback: split by comma
+        return subjects
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+    }
+    return [];
+  };
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -105,6 +109,7 @@ export default function Subjects() {
     );
   }
 
+  console.log(subjects);
   return (
     <Layout>
       <div className="">
@@ -142,13 +147,76 @@ export default function Subjects() {
 
                 <div>
                   <label className="block text-gray-300 text-sm mb-2">
-                    Subjects (comma separated)
+                    Subjects (tags)
                   </label>
-                  <textarea
-                    defaultValue={editingItem?.subjects?.join(", ") || ""}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white h-24 resize-none"
-                    placeholder="Subject 1, Subject 2, Subject 3"
-                  />
+                  <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
+                    {(Array.isArray(editingItem?.subjects)
+                      ? editingItem.subjects
+                      : typeof editingItem?.subjects === "string"
+                      ? editingItem.subjects
+                          .split(",")
+                          .map((s) => s.trim().replace(/^\[+|\]+$/g, "")) // Remove brackets
+                          .filter(Boolean)
+                      : []
+                    ).map((tag, idx, arr) => (
+                      <span
+                        key={idx}
+                        className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
+                      >
+                        {tag}
+                        <button
+                          type="button"
+                          className="ml-1 text-violet-400 hover:text-red-400"
+                          onClick={() => {
+                            const newTags = arr.filter((_, i) => i !== idx);
+                            setEditingItem({
+                              id: editingItem?.id || "",
+                              category: editingItem?.category || "",
+                              subjects: newTags.join(", "),
+                            });
+                          }}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                    <input
+                      type="text"
+                      className="bg-transparent outline-none text-xs text-white flex-1 min-w-[80px]"
+                      placeholder="Add tag"
+                      onKeyDown={(e) => {
+                        if (
+                          (e.key === "Enter" || e.key === ",") &&
+                          e.currentTarget.value.trim()
+                        ) {
+                          e.preventDefault();
+                          const currentTags = Array.isArray(
+                            editingItem?.subjects
+                          )
+                            ? editingItem.subjects
+                            : typeof editingItem?.subjects === "string"
+                            ? editingItem.subjects
+                                .split(",")
+                                .map((s) => s.trim())
+                                .filter(Boolean)
+                            : [];
+                          if (
+                            !currentTags.includes(e.currentTarget.value.trim())
+                          ) {
+                            setEditingItem({
+                              id: editingItem?.id || "",
+                              category: editingItem?.category || "",
+                              subjects: [
+                                ...currentTags,
+                                e.currentTarget.value.trim(),
+                              ].join(", "),
+                            });
+                          }
+                          e.currentTarget.value = "";
+                        }
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -160,7 +228,13 @@ export default function Subjects() {
                   Cancel
                 </button>
                 <button
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false);
+                    updateDocument("subjects", editingItem?.id || "", {
+                      category: editingItem?.category,
+                      subjects: getTagsArray(editingItem?.subjects || ""),
+                    });
+                  }}
                   className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
                 >
                   {editingItem ? "Update" : "Create"}
