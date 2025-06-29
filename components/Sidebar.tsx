@@ -43,7 +43,6 @@ const menuItems: MenuItem[] = [
   { name: 'Artists', href: '/artists', icon: Palette, editable: true },
   { name: 'Subjects', href: '/subjects', icon: BookOpen, editable: true },
   { name: 'Processing Queue', href: '/queue', icon: Activity },
-  { name: 'Admin Users', href: '/admin-users', icon: UserPlus },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
