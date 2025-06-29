@@ -8,6 +8,7 @@ import {
   updateDocument,
   deleteDocument,
 } from "../../services/crud";
+import Image from "next/image";
 
 interface HomeImage {
   id: string;
@@ -30,7 +31,7 @@ const columns: Column[] = [
     key: "file_link",
     label: "Preview",
     render: (value: string) => (
-      <img src={value} alt="" className="w-20 h-16 rounded-lg object-cover" />
+      <Image width={80} height={64} src={value} alt="" className="w-20 h-16 rounded-lg object-cover" />
     ),
   },
   { key: "title", label: "Title" },

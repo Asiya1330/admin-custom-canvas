@@ -3,6 +3,7 @@ import Layout from '../../components/Layout'
 import DataTable from '../../components/DataTable'
 import { useEffect, useState } from 'react'
 import { getImages, deleteDocument } from '../../services/crud'
+import Image from 'next/image'
 
 interface Image {
     id: string
@@ -26,7 +27,7 @@ const columns: Column[] = [
         key: 'imageUrl',
         label: 'Preview',
         render: (value: string) => (
-            <img src={value} alt="" className="w-16 h-16 rounded-lg object-cover" />
+            <Image width={64} height={64} src={value} alt="" className="w-16 h-16 rounded-lg object-cover" />
         )
     },
     { key: 'name', label: 'Name' },

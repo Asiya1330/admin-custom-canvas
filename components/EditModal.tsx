@@ -20,18 +20,18 @@ const EditModal: React.FC<EditModalProps> = ({
 }) => {
   if (!open) return null;
   return (
-    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4">
-      <div className={`glass-effect rounded-2xl p-6 w-full ${maxWidth} max-h-[90vh] overflow-y-auto bg-slate-900 relative`}>
+    <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-2">
+      <div className={`glass-effect rounded-lg p-3 w-full ${maxWidth} max-h-[90vh] overflow-y-auto bg-slate-900 relative`}>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-white text-xl font-bold focus:outline-none"
+          className="absolute top-2 right-2 text-gray-400 hover:text-white text-lg font-bold focus:outline-none"
           aria-label="Close"
         >
           ×
         </button>
-        <h2 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6">{title}</h2>
+        <h2 className="text-base font-bold text-white mb-2">{title}</h2>
         {children}
-        {actions && <div className="flex justify-end space-x-3 mt-6">{actions}</div>}
+        {actions && <div className="flex justify-end space-x-2 mt-3">{actions}</div>}
       </div>
     </div>
   );

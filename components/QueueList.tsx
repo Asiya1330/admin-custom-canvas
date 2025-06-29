@@ -40,18 +40,18 @@ const mockQueue: QueueItem[] = [
 
 export default function QueueList() {
   return (
-    <div className="glass-effect rounded-2xl p-6">
-      <div className="space-y-4">
+    <div className="glass-effect rounded-lg p-3">
+      <div className="space-y-2">
         {mockQueue.map((item) => (
-          <div key={item.orderId} className="p-4 hover:bg-white/5 rounded-lg transition-colors border border-white/10">
-            <div className="flex items-center justify-between mb-3">
+          <div key={item.orderId} className="p-2 hover:bg-white/5 rounded transition-colors border border-white/10">
+            <div className="flex items-center justify-between mb-2">
               <div>
-                <h3 className="text-white font-medium">Order #{item.orderId}</h3>
-                <p className="text-gray-400 text-sm">
+                <h3 className="text-white font-medium text-sm">Order #{item.orderId}</h3>
+                <p className="text-gray-400 text-xs">
                   Queued: {new Date(item.queuedAt).toLocaleString()}
                 </p>
               </div>
-              <span className={`px-3 py-1 text-sm rounded-full ${
+              <span className={`px-2 py-0.5 text-xs rounded-full ${
                 item.status === 'completed' 
                   ? 'bg-green-500/20 text-green-400'
                   : item.status === 'processing'
@@ -62,19 +62,19 @@ export default function QueueList() {
               </span>
             </div>
             
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+            <div className="grid grid-cols-2 gap-2">
+              <div className="flex items-center space-x-2 p-2 bg-white/5 rounded">
                 <StatusIcon status={item.steps.topaz.status} />
                 <div>
-                  <p className="text-white text-sm font-medium">Topaz Enhancement</p>
+                  <p className="text-white text-xs font-medium">Topaz Enhancement</p>
                   <p className="text-gray-400 text-xs">{item.steps.topaz.status}</p>
                 </div>
               </div>
               
-              <div className="flex items-center space-x-3 p-3 bg-white/5 rounded-lg">
+              <div className="flex items-center space-x-2 p-2 bg-white/5 rounded">
                 <StatusIcon status={item.steps.lumaprint.status} />
                 <div>
-                  <p className="text-white text-sm font-medium">LumaPrint</p>
+                  <p className="text-white text-xs font-medium">LumaPrint</p>
                   <p className="text-gray-400 text-xs">{item.steps.lumaprint.status}</p>
                 </div>
               </div>

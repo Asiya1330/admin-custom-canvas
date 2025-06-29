@@ -36,6 +36,7 @@ declare module 'lucide-react' {
     export const Edit:  React.FC<LucideProps>;
     export const ChevronRight:  React.FC<LucideProps>;
     export const ChevronLeft:  React.FC<LucideProps>;
+    export const Crown:  React.FC<LucideProps>;
 
     export type LucideIcon = React.FC<LucideProps>;
 

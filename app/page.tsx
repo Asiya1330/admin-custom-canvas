@@ -45,10 +45,10 @@ export default function Dashboard() {
   const router = useRouter()
 
   useEffect(() => {
-    if (!loading && !user) {
+    if (!loading && !user?.email) {
       router.push('/login')
     }
-  }, [user, loading, router])
+  }, [user?.email, loading, router])
 
   if (loading) {
     return (
@@ -58,30 +58,30 @@ export default function Dashboard() {
     )
   }
 
-  if (!user) {
+  if (!user?.email) {
     return null
   }
 
   return (
     <Layout>
-      <div className="space-y-8">
+      <div className="space-y-4">
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
           {stats.map((stat, index) => {
             const Icon = stat.icon
             return (
               <div
                 key={stat.title}
-                className="glass-effect rounded-2xl p-6 animate-fadeInUp"
+                className="glass-effect rounded-lg p-3 animate-fadeInUp"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-gray-400 text-sm">{stat.title}</p>
-                    <p className="text-2xl font-bold text-white mt-1">{stat.value}</p>
+                    <p className="text-gray-400 text-xs">{stat.title}</p>
+                    <p className="text-lg font-bold text-white mt-0.5">{stat.value}</p>
                   </div>
-                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${stat.color} flex items-center justify-center`}>
-                    <Icon size={24} className="text-white" />
+                  <div className={`w-8 h-8 rounded-lg bg-gradient-to-r ${stat.color} flex items-center justify-center`}>
+                    <Icon size={16} className="text-white" />
                   </div>
                 </div>
               </div>
@@ -90,28 +90,28 @@ export default function Dashboard() {
         </div>
 
         {/* Recent Activity */}
-        <div className="glass-effect rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-white mb-6">Recent Activity</h2>
-          <div className="space-y-4">
-            <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
-              <div className="w-3 h-3 bg-green-400 rounded-full"></div>
+        <div className="glass-effect rounded-lg p-3">
+          <h2 className="text-base font-bold text-white mb-3">Recent Activity</h2>
+          <div className="space-y-2">
+            <div className="flex items-center space-x-2 p-2 bg-white/5 rounded">
+              <div className="w-2 h-2 bg-green-400 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-white">New user registered</p>
-                <p className="text-gray-400 text-sm">2 minutes ago</p>
+                <p className="text-white text-xs">New user registered</p>
+                <p className="text-gray-400 text-xs">2 minutes ago</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
-              <div className="w-3 h-3 bg-blue-400 rounded-full"></div>
+            <div className="flex items-center space-x-2 p-2 bg-white/5 rounded">
+              <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-white">Image generated successfully</p>
-                <p className="text-gray-400 text-sm">5 minutes ago</p>
+                <p className="text-white text-xs">Image generated successfully</p>
+                <p className="text-gray-400 text-xs">5 minutes ago</p>
               </div>
             </div>
-            <div className="flex items-center space-x-4 p-4 bg-white/5 rounded-lg">
-              <div className="w-3 h-3 bg-purple-400 rounded-full"></div>
+            <div className="flex items-center space-x-2 p-2 bg-white/5 rounded">
+              <div className="w-2 h-2 bg-purple-400 rounded-full"></div>
               <div className="flex-1">
-                <p className="text-white">New order placed</p>
-                <p className="text-gray-400 text-sm">10 minutes ago</p>
+                <p className="text-white text-xs">New order placed</p>
+                <p className="text-gray-400 text-xs">10 minutes ago</p>
               </div>
             </div>
           </div>

@@ -183,6 +183,16 @@ export const deleteDocument = async (collectionName: string, id: string) => {
   }
 };
 
+
+export const getSingleUser = async (id: string) => {
+  const userRef = doc(db, 'users', id);
+  const userSnap = await getDoc(userRef);
+  if (!userSnap.exists()) {
+    return null;
+  }
+  return userSnap.data();
+};
+
 // Users specific operations
 export const getUsers = async () => {
   try {
@@ -256,6 +266,20 @@ export const getImages = async () => {
     console.error('Error fetching images:', error);
     return [];
   }
+};
+
+export const getImagesByUserId = async (userId: string) => {
+  const imagesRef = collection(db, 'images');
+  const q = query(imagesRef, where('userId', '==', userId));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.docs.length === 0) {
+    return [];
+  }
+  console.log(querySnapshot.docs.map(doc => doc.data()), "images");
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as any[];
 };
 
 export const getImagesPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
@@ -336,6 +360,20 @@ export const getProductsPaginated = async (params: PaginationParams): Promise<Pa
     console.error('Error fetching products:', error);
     return { data: [], lastDoc: null, hasMore: false };
   }
+};
+
+
+export const getOrdersByUserId = async (userId: string) => {
+  const ordersRef = collection(db, 'orders');
+  const q = query(ordersRef, where('userId', '==', userId));
+  const querySnapshot = await getDocs(q);
+  if (querySnapshot.docs.length === 0) {
+    return [];
+  }
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  })) as any[];
 };
 
 // Orders specific operations

@@ -3,6 +3,7 @@ import Layout from '../../components/Layout'
 import DataTable from '../../components/DataTable'
 import { useEffect, useState } from 'react'
 import { getProducts, deleteDocument } from '../../services/crud'
+import Image from 'next/image'
 
 interface Product {
     id: string
@@ -26,7 +27,7 @@ const columns: Column<Product>[] = [
         key: 'imageUrl',
         label: 'Preview',
         render: (value) => (
-            <img src={value as string} alt="" className="w-16 h-16 rounded-lg object-cover" />
+            <Image width={40} height={40} src={value as string} alt="" className="w-10 h-10 rounded object-cover" />
         )
     },
     { key: 'name', label: 'Product Name' },
@@ -83,9 +84,9 @@ export default function Products() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-white">Loading products...</div>
+        <div className="p-4">
+          <div className="flex items-center justify-center h-32">
+            <div className="text-white text-sm">Loading products...</div>
           </div>
         </div>
       </Layout>
