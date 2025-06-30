@@ -370,10 +370,81 @@ export const getOrdersByUserId = async (userId: string) => {
   if (querySnapshot.docs.length === 0) {
     return [];
   }
-  return querySnapshot.docs.map(doc => ({
+  
+  const orders = querySnapshot.docs.map(doc => ({
     id: doc.id,
     ...doc.data()
   })) as any[];
+
+  // Fetch product details for each order
+  const ordersWithProducts = await Promise.all(
+    orders.map(async (order) => {
+      if (order.products && Array.isArray(order.products)) {
+        const productPromises = order.products.map(async (productItem: any) => {
+          if (productItem.productId) {
+            const productDoc = await getDoc(doc(db, 'products', productItem.productId));
+            if (productDoc.exists()) {
+              return {
+                ...productItem,
+                productDetails: {
+                  id: productDoc.id,
+                  ...productDoc.data()
+                }
+              };
+            }
+          }
+          return productItem;
+        });
+        
+        order.products = await Promise.all(productPromises);
+      }
+      return order;
+    })
+  );
+
+  return ordersWithProducts;
+};
+
+export const getSingleOrder = async (orderId: string) => {
+  try {
+    const orderDoc = await getDoc(doc(db, 'orders', orderId));
+    if (!orderDoc.exists()) {
+      return null;
+    }
+    
+    const orderData = orderDoc.data();
+    const order: any = {
+      id: orderDoc.id,
+      orderId: orderDoc.id,
+      ...orderData
+    };
+
+    // If order has products, fetch their details
+    if (orderData.products && Array.isArray(orderData.products)) {
+      const productPromises = orderData.products.map(async (productItem: any) => {
+        if (productItem.productId) {
+          const productDoc = await getDoc(doc(db, 'products', productItem.productId));
+          if (productDoc.exists()) {
+            return {
+              ...productItem,
+              productDetails: {
+                id: productDoc.id,
+                ...productDoc.data()
+              }
+            };
+          }
+        }
+        return productItem;
+      });
+      
+      order.products = await Promise.all(productPromises);
+    }
+
+    return order;
+  } catch (error) {
+    console.error('Error fetching single order:', error);
+    return null;
+  }
 };
 
 // Orders specific operations
@@ -788,12 +859,16 @@ export const getDashboardStats = async () => {
       getOrders()
     ]);
 
+    // Calculate total earnings
+    const totalEarnings = orders.reduce((sum, order) => sum + (order.totalAmount || 0), 0);
+
     return {
       totalUsers: users.length,
       totalImages: images.length,
       totalProducts: products.length,
       totalOrders: orders.length,
-      recentActivity: await getRecentActivity()
+      totalEarnings,
+      recentActivity: await getRecentActivity(),
     };
   } catch (error) {
     console.error('Error fetching dashboard stats:', error);
@@ -802,7 +877,8 @@ export const getDashboardStats = async () => {
       totalImages: 0,
       totalProducts: 0,
       totalOrders: 0,
-      recentActivity: []
+      totalEarnings: 0,
+      recentActivity: [],
     };
   }
 };
