@@ -794,6 +794,81 @@ export const getQueueItems = async () => {
   }
 };
 
+// Get queue item with full order details
+export const getQueueItemWithOrder = async (orderId: string) => {
+  try {
+    // Get the order details
+    const order = await getSingleOrder(orderId);
+    
+    // Get queue processing data
+    const processingQuery = query(
+      collection(db, 'order-processing-queue'),
+      where('orderId', '==', orderId)
+    );
+    const processingSnapshot = await getDocs(processingQuery);
+    const processingData = processingSnapshot.docs[0]?.data();
+
+    // Get order request data
+    const orderReqQuery = query(
+      collection(db, 'orders-req'),
+      where('orderId', '==', orderId)
+    );
+    const orderReqSnapshot = await getDocs(orderReqQuery);
+    const orderReq = orderReqSnapshot.docs[0]?.data();
+
+    if (!orderReq) {
+      return null;
+    }
+
+    // Determine status and priority
+    let status: 'queued' | 'processing' | 'completed' | 'failed' | 'unknown' = 'queued';
+    let priority: 'low' | 'medium' | 'high' = 'medium';
+
+    if (orderReq.processed && processingData) {
+      const lumaprintStatus = processingData.steps?.lumaprint?.status || 'unknown';
+      const topazStatus = processingData.steps?.topaz?.status || 'unknown';
+      const overallStatus = processingData.status || 'unknown';
+      
+      status = 'completed';
+      priority = 'low';
+      
+      if (overallStatus === 'failed') {
+        status = 'failed';
+        priority = 'high';
+      } else if (lumaprintStatus === 'failed' || topazStatus === 'failed') {
+        status = 'failed';
+        priority = 'high';
+      } else if (lumaprintStatus === 'processing' || topazStatus === 'processing') {
+        status = 'processing';
+        priority = 'medium';
+      }
+    }
+
+    return {
+      id: orderReqSnapshot.docs[0]?.id || '',
+      orderId,
+      status,
+      priority,
+      createdAt: orderReq.createdAt,
+      processedAt: orderReq.processedAt,
+      processed: orderReq.processed || false,
+      processingData: processingData ? {
+        status: processingData.status || 'unknown',
+        lumaprintStatus: processingData.steps?.lumaprint?.status || 'unknown',
+        topazStatus: processingData.steps?.topaz?.status || 'unknown',
+        lumaprintError: processingData.steps?.lumaprint?.result?.message || null,
+        topazError: processingData.steps?.topaz?.result?.message || null,
+        completedAt: processingData.completedAt,
+        queuedAt: processingData.queuedAt
+      } : null,
+      order
+    };
+  } catch (error) {
+    console.error('Error fetching queue item with order:', error);
+    return null;
+  }
+};
+
 export const getQueueItemsPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
   try {
     const { pageSize, lastDoc } = params;
@@ -916,10 +991,7 @@ export const getDashboardTrends = async () => {
       getDocs(query(collection(db, 'orders'), where('createdAt', '>=', lastMonth), where('createdAt', '<', currentMonth)))
     ]);
 
-    //show orders with month and year
-    console.log(thisMonthOrders.docs.map(doc => doc.data().createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })), "thisMonthOrders")
-    console.log(lastMonthOrders.docs.map(doc => doc.data().createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })), "lastMonthOrders")
-    // Calculate this month's earnings
+     // Calculate this month's earnings
     const thisMonthEarnings = thisMonthOrders.docs.reduce((sum, doc) => {
       const data = doc.data();
       return sum + (data.totalAmount || 0);

@@ -46,6 +46,8 @@ declare module "lucide-react" {
 
   export const ArrowUpRight: React.FC<LucideProps>;
   export const ArrowDownRight: React.FC<LucideProps>;
+  export const ArrowUpDown: React.FC<LucideProps>;
+  export const Eye: React.FC<LucideProps>;
 
   export type LucideIcon = React.FC<LucideProps>;
 
