@@ -916,7 +916,9 @@ export const getDashboardTrends = async () => {
       getDocs(query(collection(db, 'orders'), where('createdAt', '>=', lastMonth), where('createdAt', '<', currentMonth)))
     ]);
 
-    console.log(thisMonthOrders.docs, lastMonthOrders.docs, "thisMonthOrders, lastMonthOrders")
+    //show orders with month and year
+    console.log(thisMonthOrders.docs.map(doc => doc.data().createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })), "thisMonthOrders")
+    console.log(lastMonthOrders.docs.map(doc => doc.data().createdAt.toDate().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })), "lastMonthOrders")
     // Calculate this month's earnings
     const thisMonthEarnings = thisMonthOrders.docs.reduce((sum, doc) => {
       const data = doc.data();
