@@ -12,6 +12,7 @@ import {
   signInWithPopup,
   GoogleAuthProvider,
   onAuthStateChanged,
+  signOut,
 } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { getSingleUser } from "@/services/crud";
@@ -49,14 +50,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = userCredential.user;
       // Fetch user doc from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists() || !userDoc.data().isAdmin) {
-        throw new Error("You do not have access to this portal.");
+      if (!userDoc.exists()) {
+        throw new Error("User not found. Please contact support.");
       }
+      
+      const userData = userDoc.data();
+      // Only allow users with isAdmin === true
+      if (userData.isAdmin !== true) {
+        // Sign out the user since they don't have admin access
+        await signOut(auth);
+        throw new Error("You do not have admin access to this portal.");
+      }
+      
       setUser({
         displayName: user.displayName || "",
         email: user.email || "",
         photoURL: user.photoURL || "",
-        isAdmin: userDoc.data().isAdmin || false,
+        isAdmin: true,
       });
     } catch (err: any) {
       throw new Error(
@@ -76,14 +86,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const user = result.user;
       // Fetch user doc from Firestore
       const userDoc = await getDoc(doc(db, "users", user.uid));
-      if (!userDoc.exists() || !userDoc.data().isAdmin) {
-        throw new Error("You do not have access to this portal.");
+      if (!userDoc.exists()) {
+        throw new Error("User not found. Please contact support.");
       }
+      
+      const userData = userDoc.data();
+      // Only allow users with isAdmin === true
+      if (userData.isAdmin !== true) {
+        // Sign out the user since they don't have admin access
+        await signOut(auth);
+        throw new Error("You do not have admin access to this portal.");
+      }
+      
       setUser({
         displayName: user.displayName || "",
         email: user.email || "",
         photoURL: user.photoURL || "",
-        isAdmin: userDoc.data().isAdmin || false,
+        isAdmin: true,
       });
     } catch (err: any) {
       throw new Error(
@@ -134,25 +153,48 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setUser(null);
+    signOut(auth);
   };
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser: any) => {
-      setLoading(false);
+      setLoading(true);
       if (firebaseUser) {
-        const user = await getSingleUser(firebaseUser.uid);
-        if (!user) {
-          throw new Error("User not found. Please contact support.");
+        try {
+          const user = await getSingleUser(firebaseUser.uid);
+          if (!user) {
+            // User doesn't exist in Firestore, sign them out
+            await signOut(auth);
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+          
+          // Only allow users with isAdmin === true
+          if (user.isAdmin !== true) {
+            // User is not an admin, sign them out
+            await signOut(auth);
+            setUser(null);
+            setLoading(false);
+            return;
+          }
+          
+          setUser({
+            displayName: user.displayName || "",
+            email: user.email || "",
+            photoURL: user.photoURL || "",
+            isAdmin: true,
+          });
+        } catch (error) {
+          console.error("Error checking user admin status:", error);
+          // If there's an error, sign out the user for security
+          await signOut(auth);
+          setUser(null);
         }
-        setUser({
-          displayName: user.displayName || "",
-          email: user.email || "",
-          photoURL: user.photoURL || "",
-          isAdmin: user.isAdmin || false,
-        });
       } else {
         setUser(null);
       }
+      setLoading(false);
     });
     return () => unsubscribe();
   }, []);

@@ -14,12 +14,13 @@ import OrderModal from "@/components/OrderModal";
 import { Crown, Search, Package, Calendar, DollarSign } from "lucide-react";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../../services/firebase";
+import { withAuth } from "@/components/withAuth";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default function UserProfilePage({ params }: Props) {
+function UserProfilePage({ params }: Props) {
   const { id } = use(params);
   const [user, setUser] = useState<User | null>(null);
   const [orders, setOrders] = useState<any[]>([]);
@@ -382,3 +383,6 @@ export default function UserProfilePage({ params }: Props) {
     </Layout>
   );
 }
+
+
+export default withAuth(UserProfilePage);

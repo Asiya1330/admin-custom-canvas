@@ -7,6 +7,7 @@ import {
   deleteDocument,
   updateDocument,
 } from "../../services/crud";
+import { withAuth } from "../../components/withAuth";
 
 interface Subject {
   id: string;
@@ -45,7 +46,7 @@ const columns: Column[] = [
   },
 ];
 
-export default function Subjects() {
+function Subjects() {
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Subject | null>(null);
@@ -200,18 +201,12 @@ export default function Subjects() {
                                 .map((s) => s.trim())
                                 .filter(Boolean)
                             : [];
-                          if (
-                            !currentTags.includes(e.currentTarget.value.trim())
-                          ) {
-                            setEditingItem({
-                              id: editingItem?.id || "",
-                              category: editingItem?.category || "",
-                              subjects: [
-                                ...currentTags,
-                                e.currentTarget.value.trim(),
-                              ].join(", "),
-                            });
-                          }
+                          const newTag = e.currentTarget.value.trim();
+                          setEditingItem({
+                            id: editingItem?.id || "",
+                            category: editingItem?.category || "",
+                            subjects: [...currentTags, newTag].join(", "),
+                          });
                           e.currentTarget.value = "";
                         }
                       }}
@@ -220,24 +215,21 @@ export default function Subjects() {
                 </div>
               </div>
 
-              <div className="flex justify-end space-x-3 mt-6">
+              <div className="flex space-x-3 mt-6">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  onClick={() => {
+                  onClick={async () => {
+                    // Handle save logic here
                     setShowModal(false);
-                    updateDocument("subjects", editingItem?.id || "", {
-                      category: editingItem?.category,
-                      subjects: getTagsArray(editingItem?.subjects || ""),
-                    });
                   }}
-                  className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+                  className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                 >
-                  {editingItem ? "Update" : "Create"}
+                  Save
                 </button>
               </div>
             </div>
@@ -247,3 +239,5 @@ export default function Subjects() {
     </Layout>
   );
 }
+
+export default withAuth(Subjects)

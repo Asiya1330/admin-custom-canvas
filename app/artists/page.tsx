@@ -10,6 +10,7 @@ import {
   deleteDocument,
 } from "../../services/crud";
 import EditModal from "../../components/EditModal";
+import { withAuth } from "../../components/withAuth";
 
 interface Artist {
   id: string;
@@ -50,7 +51,7 @@ const columns: Column[] = [
   },
 ];
 
-export default function Artists() {
+function Artists() {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Artist | null>(null);
@@ -199,14 +200,12 @@ export default function Artists() {
                         .split(",")
                         .map((t: string) => t.trim())
                         .filter((t: string) => Boolean(t));
-                      if (!currentTags.includes(newTag)) {
-                        setEditingItem({
-                          id: editingItem?.id ?? "",
-                          name: editingItem?.name ?? "",
-                          artist_name: editingItem?.artist_name ?? "",
-                          tags: [...currentTags, newTag].join(", "),
-                        });
-                      }
+                      setEditingItem({
+                        id: editingItem?.id ?? "",
+                        name: editingItem?.name ?? "",
+                        artist_name: editingItem?.artist_name ?? "",
+                        tags: [...currentTags, newTag].join(", "),
+                      });
                       e.currentTarget.value = "";
                     }
                   }}
@@ -280,3 +279,5 @@ export default function Artists() {
     </Layout>
   );
 }
+
+export default withAuth(Artists)

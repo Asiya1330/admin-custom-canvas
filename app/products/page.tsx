@@ -4,6 +4,7 @@ import DataTable from '../../components/DataTable'
 import { useEffect, useState } from 'react'
 import { getProducts, deleteDocument } from '../../services/crud'
 import Image from 'next/image'
+import { withAuth } from '../../components/withAuth'
 
 interface Product {
     id: string
@@ -45,7 +46,7 @@ const columns: Column<Product>[] = [
     }
 ]
 
-export default function Products() {
+function Products() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -108,3 +109,5 @@ export default function Products() {
     </Layout>
   )
 }
+
+export default withAuth(Products)

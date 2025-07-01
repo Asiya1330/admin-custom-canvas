@@ -3,6 +3,7 @@ import Layout from '../../components/Layout'
 import DataTable from '../../components/DataTable'
 import { useEffect, useState } from 'react'
 import { getOrders, deleteDocument } from '../../services/crud'
+import { withAuth } from '../../components/withAuth'
 
 interface Order {
     orderId: string;
@@ -71,7 +72,7 @@ const columns: Column[] = [
     }
 ];
 
-export default function Orders() {
+function Orders() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -134,3 +135,5 @@ export default function Orders() {
     </Layout>
   )
 }
+
+export default withAuth(Orders)

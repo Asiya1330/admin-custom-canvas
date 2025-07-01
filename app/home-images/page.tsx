@@ -9,6 +9,7 @@ import {
   deleteDocument,
 } from "../../services/crud";
 import Image from "next/image";
+import { withAuth } from "../../components/withAuth";
 
 interface HomeImage {
   id: string;
@@ -88,7 +89,7 @@ const columns: Column[] = [
   },
 ];
 
-export default function HomeImages() {
+function HomeImages() {
   const [homeImages, setHomeImages] = useState<HomeImage[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<HomeImage | null>(null);
@@ -200,14 +201,17 @@ export default function HomeImages() {
                   {/* Tags */}
                   <div>
                     <label className="block text-gray-300 text-sm mb-2">
-                      Tags
+                      Tags (comma separated)
                     </label>
                     <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                      {(Array.isArray(editingItem?.tags)
+                      {((typeof editingItem?.tags === "string"
                         ? editingItem.tags
-                        : typeof editingItem?.tags === "string" && editingItem?.tags
-                        ? (editingItem.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean)
-                        : []
+                        : Array.isArray(editingItem?.tags)
+                        ? (editingItem.tags as string[]).join(",")
+                        : "")
+                        .split(",")
+                        .map((t: string) => t.trim())
+                        .filter((t: string) => Boolean(t))
                       ).map((tag: string, idx: number, arr: string[]) => (
                         <span
                           key={idx}
@@ -218,15 +222,15 @@ export default function HomeImages() {
                             type="button"
                             className="ml-1 text-violet-400 hover:text-red-400"
                             onClick={() => {
-                              const newTags = arr.filter((_: string, i: number) => i !== idx);
+                              const newTags = arr.filter((_: string, i: number) => i !== idx).join(", ");
                               setEditingItem({
-                                id: editingItem?.id || "",
-                                title: editingItem?.title || "",
-                                file_link: editingItem?.file_link || "",
-                                aspect_ratio: editingItem?.aspect_ratio || "16:9",
-                                dimensions: editingItem?.dimensions || "",
-                                tags: newTags,
-                                suggested_locations: editingItem?.suggested_locations || [],
+                                id: editingItem?.id ?? "",
+                                title: editingItem?.title ?? "",
+                                file_link: editingItem?.file_link ?? "",
+                                aspect_ratio: editingItem?.aspect_ratio ?? "",
+                                dimensions: editingItem?.dimensions ?? "",
+                                tags: newTags.split(",").map((t: string) => t.trim()).filter((t: string) => Boolean(t)),
+                                suggested_locations: editingItem?.suggested_locations ?? [],
                               });
                             }}
                           >
@@ -245,22 +249,24 @@ export default function HomeImages() {
                           ) {
                             e.preventDefault();
                             const newTag = e.currentTarget.value.trim();
-                            const currentTags = Array.isArray(editingItem?.tags)
+                            const currentTags = ((typeof editingItem?.tags === "string"
                               ? editingItem.tags
-                              : typeof editingItem?.tags === "string" && editingItem?.tags
-                              ? (editingItem.tags as string).split(",").map((t: string) => t.trim()).filter(Boolean)
-                              : [];
-                            if (!currentTags.includes(newTag)) {
-                              setEditingItem({
-                                id: editingItem?.id || "",
-                                title: editingItem?.title || "",
-                                file_link: editingItem?.file_link || "",
-                                aspect_ratio: editingItem?.aspect_ratio || "16:9",
-                                dimensions: editingItem?.dimensions || "",
-                                tags: [...currentTags, newTag],
-                                suggested_locations: editingItem?.suggested_locations || [],
-                              });
-                            }
+                              : Array.isArray(editingItem?.tags)
+                              ? (editingItem.tags as string[]).join(",")
+                              : "")
+                            )
+                              .split(",")
+                              .map((t: string) => t.trim())
+                              .filter((t: string) => Boolean(t));
+                            setEditingItem({
+                              id: editingItem?.id ?? "",
+                              title: editingItem?.title ?? "",
+                              file_link: editingItem?.file_link ?? "",
+                              aspect_ratio: editingItem?.aspect_ratio ?? "",
+                              dimensions: editingItem?.dimensions ?? "",
+                              tags: [...currentTags, newTag],
+                              suggested_locations: editingItem?.suggested_locations ?? [],
+                            });
                             e.currentTarget.value = "";
                           }
                         }}
@@ -271,33 +277,36 @@ export default function HomeImages() {
                   {/* Suggested Locations */}
                   <div>
                     <label className="block text-gray-300 text-sm mb-2">
-                      Locations
+                      Suggested Locations (comma separated)
                     </label>
                     <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                      {(Array.isArray(editingItem?.suggested_locations)
+                      {((typeof editingItem?.suggested_locations === "string"
                         ? editingItem.suggested_locations
-                        : typeof editingItem?.suggested_locations === "string" && editingItem?.suggested_locations
-                        ? (editingItem.suggested_locations as string).split(",").map((l: string) => l.trim()).filter(Boolean)
-                        : []
-                      ).map((loc: string, idx: number, arr: string[]) => (
+                        : Array.isArray(editingItem?.suggested_locations)
+                        ? (editingItem.suggested_locations as string[]).join(",")
+                        : "")
+                        .split(",")
+                        .map((l: string) => l.trim())
+                        .filter((l: string) => Boolean(l))
+                      ).map((location: string, idx: number, arr: string[]) => (
                         <span
                           key={idx}
                           className="flex items-center px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full"
                         >
-                          {loc}
+                          {location}
                           <button
                             type="button"
                             className="ml-1 text-blue-400 hover:text-red-400"
                             onClick={() => {
-                              const newLocs = arr.filter((_: string, i: number) => i !== idx);
+                              const newLocations = arr.filter((_: string, i: number) => i !== idx).join(", ");
                               setEditingItem({
-                                id: editingItem?.id || "",
-                                title: editingItem?.title || "",
-                                file_link: editingItem?.file_link || "",
-                                aspect_ratio: editingItem?.aspect_ratio || "16:9",
-                                dimensions: editingItem?.dimensions || "",
-                                tags: editingItem?.tags || [],
-                                suggested_locations: newLocs,
+                                id: editingItem?.id ?? "",
+                                title: editingItem?.title ?? "",
+                                file_link: editingItem?.file_link ?? "",
+                                aspect_ratio: editingItem?.aspect_ratio ?? "",
+                                dimensions: editingItem?.dimensions ?? "",
+                                tags: editingItem?.tags ?? [],
+                                suggested_locations: newLocations.split(",").map((l: string) => l.trim()).filter((l: string) => Boolean(l)),
                               });
                             }}
                           >
@@ -315,23 +324,25 @@ export default function HomeImages() {
                             e.currentTarget.value.trim()
                           ) {
                             e.preventDefault();
-                            const newLoc = e.currentTarget.value.trim();
-                            const currentLocs = Array.isArray(editingItem?.suggested_locations)
+                            const newLocation = e.currentTarget.value.trim();
+                            const currentLocations = ((typeof editingItem?.suggested_locations === "string"
                               ? editingItem.suggested_locations
-                              : typeof editingItem?.suggested_locations === "string" && editingItem?.suggested_locations
-                              ? (editingItem.suggested_locations as string).split(",").map((l: string) => l.trim()).filter(Boolean)
-                              : [];
-                            if (!currentLocs.includes(newLoc)) {
-                              setEditingItem({
-                                id: editingItem?.id || "",
-                                title: editingItem?.title || "",
-                                file_link: editingItem?.file_link || "",
-                                aspect_ratio: editingItem?.aspect_ratio || "16:9",
-                                dimensions: editingItem?.dimensions || "",
-                                tags: editingItem?.tags || [],
-                                suggested_locations: [...currentLocs, newLoc],
-                              });
-                            }
+                              : Array.isArray(editingItem?.suggested_locations)
+                              ? (editingItem.suggested_locations as string[]).join(",")
+                              : "")
+                            )
+                              .split(",")
+                              .map((l: string) => l.trim())
+                              .filter((l: string) => Boolean(l));
+                            setEditingItem({
+                              id: editingItem?.id ?? "",
+                              title: editingItem?.title ?? "",
+                              file_link: editingItem?.file_link ?? "",
+                              aspect_ratio: editingItem?.aspect_ratio ?? "",
+                              dimensions: editingItem?.dimensions ?? "",
+                              tags: editingItem?.tags ?? [],
+                              suggested_locations: [...currentLocations, newLocation],
+                            });
                             e.currentTarget.value = "";
                           }
                         }}
@@ -339,22 +350,34 @@ export default function HomeImages() {
                     </div>
                   </div>
                 </div>
+
                 <div className="space-y-4">
+                  <div>
+                    <label className="block text-gray-300 text-sm mb-2">
+                      File Link
+                    </label>
+                    <input
+                      type="text"
+                      defaultValue={editingItem?.file_link || ""}
+                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                      placeholder="Enter file link"
+                      id="edit-file_link"
+                    />
+                  </div>
+
                   <div>
                     <label className="block text-gray-300 text-sm mb-2">
                       Aspect Ratio
                     </label>
-                    <select
-                      defaultValue={editingItem?.aspect_ratio || "16:9"}
+                    <input
+                      type="text"
+                      defaultValue={editingItem?.aspect_ratio || ""}
                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                      placeholder="e.g., 16:9, 4:3"
                       id="edit-aspect_ratio"
-                    >
-                      <option value="16:9">16:9</option>
-                      <option value="4:3">4:3</option>
-                      <option value="1:1">1:1</option>
-                      <option value="3:2">3:2</option>
-                    </select>
+                    />
                   </div>
+
                   <div>
                     <label className="block text-gray-300 text-sm mb-2">
                       Dimensions
@@ -363,71 +386,43 @@ export default function HomeImages() {
                       type="text"
                       defaultValue={editingItem?.dimensions || ""}
                       className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
-                      placeholder="1920x1080"
+                      placeholder="e.g., 1920x1080"
                       id="edit-dimensions"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-gray-300 text-sm mb-2">
-                      File URL
-                    </label>
-                    <input
-                      type="url"
-                      disabled={true}
-                      defaultValue={editingItem?.file_link || ""}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
-                      placeholder="https://example.com/image.jpg"
-                      id="edit-file_link"
                     />
                   </div>
                 </div>
               </div>
-              <div className="flex justify-end space-x-3 mt-6">
+
+              <div className="flex space-x-3 mt-6">
                 <button
-                  className="px-4 py-2 rounded-lg bg-gray-700 text-white hover:bg-gray-600"
                   onClick={() => {
                     setShowModal(false);
                     setEditingItem(null);
                   }}
+                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
-                  className="px-4 py-2 rounded-lg bg-violet-600 text-white hover:bg-violet-500"
                   onClick={async () => {
                     const formData = {
-                      title:
-                        (
-                          document.getElementById(
-                            "edit-title"
-                          ) as HTMLInputElement
-                        )?.value || "",
-                      file_link:
-                        (
-                          document.getElementById(
-                            "edit-file_link"
-                          ) as HTMLInputElement
-                        )?.value || "",
-                      aspect_ratio:
-                        (
-                          document.getElementById(
-                            "edit-aspect_ratio"
-                          ) as HTMLSelectElement
-                        )?.value || "16:9",
-                      dimensions:
-                        (
-                          document.getElementById(
-                            "edit-dimensions"
-                          ) as HTMLInputElement
-                        )?.value || "",
+                      title: (document.getElementById("edit-title") as HTMLInputElement)?.value || "",
+                      file_link: (document.getElementById("edit-file_link") as HTMLInputElement)?.value || "",
+                      aspect_ratio: (document.getElementById("edit-aspect_ratio") as HTMLInputElement)?.value || "",
+                      dimensions: (document.getElementById("edit-dimensions") as HTMLInputElement)?.value || "",
                       tags: editingItem?.tags || [],
-                      suggested_locations:
-                        editingItem?.suggested_locations || [],
+                      suggested_locations: editingItem?.suggested_locations || [],
                     };
-                    await handleUpdate(formData);
+
+                    if (editingItem) {
+                      await handleUpdate(formData);
+                    } else {
+                      await handleCreate(formData);
+                    }
                   }}
+                  className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
                 >
-                  Save
+                  {editingItem ? "Update" : "Create"}
                 </button>
               </div>
             </div>
@@ -437,3 +432,5 @@ export default function HomeImages() {
     </Layout>
   );
 }
+
+export default withAuth(HomeImages)

@@ -4,13 +4,16 @@ import type { NextRequest } from 'next/server'
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   
-  // Allow access to login page
-  if (pathname === '/login') {
+  // Allow access to login page and static assets
+  if (pathname === '/login' || 
+      pathname.startsWith('/_next/') || 
+      pathname.startsWith('/api/') || 
+      pathname === '/favicon.ico') {
     return NextResponse.next()
   }
   
   // For all other pages, let the client-side handle authentication
-  // The AuthContext will redirect to login if not authenticated
+  // The withAuth HOC will redirect to login if not authenticated
   return NextResponse.next()
 }
 

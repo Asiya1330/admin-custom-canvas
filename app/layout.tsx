@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { AuthProvider } from "../contexts/AuthContext";
+import ProtectedRoute from "../components/ProtectedRoute";
 
 export const metadata: Metadata = {
   title: "Admin Portal - Custom Canvas",

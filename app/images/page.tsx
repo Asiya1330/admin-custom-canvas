@@ -4,6 +4,7 @@ import DataTable from '../../components/DataTable'
 import { useEffect, useState } from 'react'
 import { getImages, deleteDocument } from '../../services/crud'
 import Image from 'next/image'
+import { withAuth } from '../../components/withAuth'
 
 interface Image {
     id: string
@@ -41,7 +42,7 @@ const columns: Column[] = [
     }
 ]
 
-export default function Images() {
+function Images() {
   const [images, setImages] = useState<Image[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -104,3 +105,5 @@ export default function Images() {
     </Layout>
   )
 }
+
+export default withAuth(Images)

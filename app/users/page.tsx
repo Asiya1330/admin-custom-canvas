@@ -6,6 +6,7 @@ import { getUsersPaginated, addDocument, updateDocument, deleteDocument, setAdmi
 import { PaginationParams, PaginatedResult } from '../../services/crud'
 import Image from 'next/image'
 import Link from 'next/link'
+import { withAuth } from '../../components/withAuth'
 
 interface User {
     id: string;
@@ -22,7 +23,7 @@ interface Column {
     render?: (value: any, row: User) => React.ReactNode | string;
 }
 
-export default function Users() {
+function Users() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -154,3 +155,5 @@ export default function Users() {
     </Layout>
   )
 }
+
+export default withAuth(Users)

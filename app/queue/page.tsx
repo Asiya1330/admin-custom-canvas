@@ -3,6 +3,7 @@ import Layout from "../../components/Layout";
 import { Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { getQueueItems } from "../../services/crud";
+import { withAuth } from "../../components/withAuth";
 
 interface ProcessingData {
   status: string;
@@ -70,7 +71,7 @@ const getStatusColor = (status: string) => {
   }
 };
 
-export default function Queue() {
+function Queue() {
   const [queueItems, setQueueItems] = useState<QueueItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -198,3 +199,5 @@ export default function Queue() {
     </Layout>
   );
 }
+
+export default withAuth(Queue)

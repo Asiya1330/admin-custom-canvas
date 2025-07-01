@@ -5,7 +5,8 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
 import Layout from '../components/Layout'
 import { Users, Image, ShoppingCart, Package, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react'
-import { getDashboardStats } from '../services/crud'
+import { getDashboardStats, getDashboardTrends } from '../services/crud'
+import { withAuth } from '../components/withAuth'
 
 interface StatCard {
   title: string
@@ -49,47 +50,39 @@ const statConfig = [
   },
 ]
 
-export default function Dashboard() {
-  const { user, loading } = useAuth()
-  const router = useRouter()
+function Dashboard() {
+  const { user } = useAuth()
   const [stats, setStats] = useState<any>(null)
+  const [trends, setTrends] = useState<any>(null)
   const [statsLoading, setStatsLoading] = useState(true)
-
-  useEffect(() => {
-    if (!loading && !user?.email) {
-      router.push('/login')
-    }
-  }, [user?.email, loading, router])
 
   useEffect(() => {
     const fetchStats = async () => {
       setStatsLoading(true)
-      const data = await getDashboardStats()
-      setStats(data)
-      setStatsLoading(false)
+      try {
+        const [statsData, trendsData] = await Promise.all([
+          getDashboardStats(),
+          getDashboardTrends()
+        ])
+        setStats(statsData)
+        setTrends(trendsData)
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error)
+      } finally {
+        setStatsLoading(false)
+      }
     }
     fetchStats()
   }, [])
 
-  if (loading || statsLoading) {
+  if (statsLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-        <div className="text-white">Loading...</div>
-      </div>
+      <Layout>
+        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
+          <div className="text-white">Loading...</div>
+        </div>
+      </Layout>
     )
-  }
-
-  if (!user?.email) {
-    return null
-  }
-
-  // Example trend data (replace with real if available)
-  const trends = {
-    totalEarnings: { percent: 4.2, up: true },
-    totalOrders: { percent: 2.1, up: true },
-    totalUsers: { percent: 1.5, up: true },
-    totalImages: { percent: -0.8, up: false },
-    totalProducts: { percent: 0, up: false },
   }
 
   return (
@@ -105,9 +98,9 @@ export default function Dashboard() {
             </div>
             <div className="flex items-end justify-between">
               <span className="text-2xl font-bold text-white">${(stats.totalEarnings ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
-              <span className={`flex items-center text-xs font-medium ${trends.totalEarnings.up ? 'text-green-400' : 'text-red-400'}`}>
-                {trends.totalEarnings.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
-                {Math.abs(trends.totalEarnings.percent)}%
+              <span className={`flex items-center text-xs font-medium ${trends?.totalEarnings?.up ? 'text-green-400' : 'text-red-400'}`}>
+                {trends?.totalEarnings?.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
+                {trends?.totalEarnings?.percent?.toFixed(1) || '0'}%
               </span>
             </div>
             <span className="text-gray-500 text-xs">vs last month</span>
@@ -120,9 +113,9 @@ export default function Dashboard() {
             </div>
             <div className="flex items-end justify-between">
               <span className="text-2xl font-bold text-white">{stats.totalOrders ?? '-'}</span>
-              <span className={`flex items-center text-xs font-medium ${trends.totalOrders.up ? 'text-green-400' : 'text-red-400'}`}>
-                {trends.totalOrders.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
-                {Math.abs(trends.totalOrders.percent)}%
+              <span className={`flex items-center text-xs font-medium ${trends?.totalOrders?.up ? 'text-green-400' : 'text-red-400'}`}>
+                {trends?.totalOrders?.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
+                {trends?.totalOrders?.percent?.toFixed(1) || '0'}%
               </span>
             </div>
             <span className="text-gray-500 text-xs">vs last month</span>
@@ -135,9 +128,9 @@ export default function Dashboard() {
             </div>
             <div className="flex items-end justify-between">
               <span className="text-2xl font-bold text-white">{stats.totalUsers ?? '-'}</span>
-              <span className={`flex items-center text-xs font-medium ${trends.totalUsers.up ? 'text-green-400' : 'text-red-400'}`}>
-                {trends.totalUsers.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
-                {Math.abs(trends.totalUsers.percent)}%
+              <span className={`flex items-center text-xs font-medium ${trends?.totalUsers?.up ? 'text-green-400' : 'text-red-400'}`}>
+                {trends?.totalUsers?.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
+                {trends?.totalUsers?.percent?.toFixed(1) || '0'}%
               </span>
             </div>
             <span className="text-gray-500 text-xs">vs last month</span>
@@ -150,9 +143,9 @@ export default function Dashboard() {
             </div>
             <div className="flex items-end justify-between">
               <span className="text-2xl font-bold text-white">{stats.totalImages ?? '-'}</span>
-              <span className={`flex items-center text-xs font-medium ${trends.totalImages.up ? 'text-green-400' : 'text-red-400'}`}>
-                {trends.totalImages.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
-                {Math.abs(trends.totalImages.percent)}%
+              <span className={`flex items-center text-xs font-medium ${trends?.totalImages?.up ? 'text-green-400' : 'text-red-400'}`}>
+                {trends?.totalImages?.up ? <ArrowUpRight className="w-4 h-4 mr-0.5" /> : <ArrowDownRight className="w-4 h-4 mr-0.5" />}
+                {trends?.totalImages?.percent?.toFixed(1) || '0'}%
               </span>
             </div>
             <span className="text-gray-500 text-xs">vs last month</span>
@@ -203,4 +196,6 @@ export default function Dashboard() {
     </Layout>
   )
 }
+
+export default withAuth(Dashboard)
 

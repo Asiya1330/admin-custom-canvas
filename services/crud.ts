@@ -883,6 +883,75 @@ export const getDashboardStats = async () => {
   }
 };
 
+// Calculate trends by comparing this month vs last month
+export const getDashboardTrends = async () => {
+  try {
+    const now = new Date();
+    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    // Helper function to calculate percentage change
+    const calculatePercentageChange = (current: number, previous: number): { percent: number; up: boolean } => {
+      if (previous === 0) {
+        return { percent: current > 0 ? 100 : 0, up: current > 0 };
+      }
+      const change = ((current - previous) / previous) * 100;
+      return { percent: Math.abs(change), up: change >= 0 };
+    };
+
+    // Get this month's data
+    const [thisMonthUsers, thisMonthImages, thisMonthProducts, thisMonthOrders] = await Promise.all([
+      getDocs(query(collection(db, 'users'), where('createdAt', '>=', currentMonth))),
+      getDocs(query(collection(db, 'images'), where('createdAt', '>=', currentMonth))),
+      getDocs(query(collection(db, 'products'), where('createdAt', '>=', currentMonth))),
+      getDocs(query(collection(db, 'orders'), where('createdAt', '>=', currentMonth)))
+    ]);
+
+    // Get last month's data
+    const [lastMonthUsers, lastMonthImages, lastMonthProducts, lastMonthOrders] = await Promise.all([
+      getDocs(query(collection(db, 'users'), where('createdAt', '>=', lastMonth), where('createdAt', '<', currentMonth))),
+      getDocs(query(collection(db, 'images'), where('createdAt', '>=', lastMonth), where('createdAt', '<', currentMonth))),
+      getDocs(query(collection(db, 'products'), where('createdAt', '>=', lastMonth), where('createdAt', '<', currentMonth))),
+      getDocs(query(collection(db, 'orders'), where('createdAt', '>=', lastMonth), where('createdAt', '<', currentMonth)))
+    ]);
+
+    console.log(thisMonthOrders.docs, lastMonthOrders.docs, "thisMonthOrders, lastMonthOrders")
+    // Calculate this month's earnings
+    const thisMonthEarnings = thisMonthOrders.docs.reduce((sum, doc) => {
+      const data = doc.data();
+      return sum + (data.totalAmount || 0);
+    }, 0);
+
+    // Calculate last month's earnings
+    const lastMonthEarnings = lastMonthOrders.docs.reduce((sum, doc) => {
+      const data = doc.data();
+      return sum + (data.totalAmount || 0);
+    }, 0);
+
+    // Calculate trends
+    const trends = {
+      totalUsers: calculatePercentageChange(thisMonthUsers.size, lastMonthUsers.size),
+      totalImages: calculatePercentageChange(thisMonthImages.size, lastMonthImages.size),
+      totalOrders: calculatePercentageChange(thisMonthOrders.size, lastMonthOrders.size),
+      totalProducts: calculatePercentageChange(thisMonthProducts.size, lastMonthProducts.size),
+      totalEarnings: calculatePercentageChange(thisMonthEarnings, lastMonthEarnings),
+    };
+
+    return trends;
+  } catch (error) {
+    console.error('Error calculating trends:', error);
+    // Return default trends if there's an error
+    return {
+      totalUsers: { percent: 0, up: false },
+      totalImages: { percent: 0, up: false },
+      totalOrders: { percent: 0, up: false },
+      totalProducts: { percent: 0, up: false },
+      totalEarnings: { percent: 0, up: false },
+    };
+  }
+};
+
 // Recent activity
 export const getRecentActivity = async () => {
   try {

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { Mail } from 'lucide-react'
@@ -12,7 +12,14 @@ export default function Login() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const router = useRouter()
-  const { login, loginWithGoogle } = useAuth()
+  const { user, login, loginWithGoogle, loading: authLoading } = useAuth()
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (!authLoading && user) {
+      router.push('/')
+    }
+  }, [user, authLoading, router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,14 +30,30 @@ export default function Login() {
       await login(email, password)
       router.push('/')
     } catch (error: any) {
-      if (error.message === 'You do not have access to this portal.') {
-        setError('You do not have access to this portal.')
+      if (error.message === 'You do not have admin access to this portal.') {
+        setError('You do not have admin access to this portal. Please contact support.')
+      } else if (error.message === 'User not found. Please contact support.') {
+        setError('User not found. Please contact support.')
       } else {
         setError('Invalid email or password')
       }
     } finally {
       setLoading(false)
     }
+  }
+
+  // Show loading while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-2">
+        <div className="text-white">Loading...</div>
+      </div>
+    )
+  }
+
+  // Don't show login form if user is already authenticated
+  if (user) {
+    return null
   }
 
   return (
@@ -105,8 +128,10 @@ export default function Login() {
                 await loginWithGoogle();
                 router.push("/");
               } catch (error: any) {
-                if (error.message === "You do not have access to this portal.") {
-                  setError("You do not have access to this portal.");
+                if (error.message === "You do not have admin access to this portal.") {
+                  setError("You do not have admin access to this portal. Please contact support.");
+                } else if (error.message === "User not found. Please contact support.") {
+                  setError("User not found. Please contact support.");
                 } else {
                   setError("Google sign-in failed. Please try again.");
                 }
