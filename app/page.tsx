@@ -91,7 +91,7 @@ function Dashboard() {
         {/* Top Analytics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           {/* Net Revenue */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col gap-2">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-gray-400 text-xs">Net Revenue</span>
               <DollarSign className="w-5 h-5 text-yellow-400" />
@@ -106,7 +106,7 @@ function Dashboard() {
             <span className="text-gray-500 text-xs">vs last month</span>
           </div>
           {/* Total Orders */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col gap-2">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-gray-400 text-xs">Total Orders</span>
               <ShoppingCart className="w-5 h-5 text-green-400" />
@@ -121,7 +121,7 @@ function Dashboard() {
             <span className="text-gray-500 text-xs">vs last month</span>
           </div>
           {/* Total Users */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col gap-2">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-gray-400 text-xs">Total Users</span>
               <Users className="w-5 h-5 text-blue-400" />
@@ -136,7 +136,7 @@ function Dashboard() {
             <span className="text-gray-500 text-xs">vs last month</span>
           </div>
           {/* Generated Images */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col gap-2">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col gap-2">
             <div className="flex items-center justify-between">
               <span className="text-gray-400 text-xs">Generated Images</span>
               <Image className="w-5 h-5 text-purple-400" />
@@ -155,7 +155,7 @@ function Dashboard() {
         {/* Lower Section: Placeholder for charts and breakdowns */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
           {/* Sales Overview (Donut/Pie Chart Placeholder) */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col">
             <span className="text-white font-bold mb-2">Sales Overview</span>
             <div className="flex flex-col items-center justify-center flex-1">
               {/* Placeholder for Donut/Pie Chart */}
@@ -166,14 +166,14 @@ function Dashboard() {
             </div>
           </div>
           {/* Products Card */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col items-center justify-center">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col items-center justify-center">
             <span className="text-white font-bold mb-2">Products</span>
             <Package className="w-10 h-10 text-orange-400 mb-2" />
             <span className="text-3xl font-bold text-white">{stats.totalProducts ?? '-'}</span>
             <span className="text-gray-400 text-xs mt-2">Total Products</span>
           </div>
           {/* Recent Activity Card */}
-          <div className="bg-[#181C23] rounded-xl p-5 shadow flex flex-col">
+          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col">
             <span className="text-white font-bold mb-2">Recent Activity</span>
             <div className="flex-1 overflow-y-auto max-h-40">
               {(stats.recentActivity && stats.recentActivity.length > 0) ? (

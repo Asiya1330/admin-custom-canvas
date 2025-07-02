@@ -17,7 +17,8 @@ import {
   ChevronRight,
   Database,
   Activity,
-  LucideIcon
+  LucideIcon,
+  X
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 
@@ -31,6 +32,7 @@ interface MenuItem {
 interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
+  onMobileClose?: () => void;
 }
 
 const menuItems: MenuItem[] = [
@@ -46,12 +48,19 @@ const menuItems: MenuItem[] = [
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
-export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
+export default function Sidebar({ collapsed, setCollapsed, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth();
 
+  const handleLinkClick = () => {
+    // Close mobile menu when a link is clicked
+    if (onMobileClose) {
+      onMobileClose();
+    }
+  };
+
   return (
-    <div className={`fixed left-0 top-0 h-full glass-effect transition-all duration-500 ease-in-out z-50 ${
+    <div className={`flex flex-col h-[100vh] glass-effect transition-all duration-500 ease-in-out ${
       collapsed ? 'w-12' : 'w-56'
     }`}>
       {/* Header */}
@@ -65,17 +74,30 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
               <p className="text-xs text-gray-400 mt-0.5">Firebase Management</p>
             </div>
           )}
-          <button
-            onClick={() => setCollapsed(!collapsed)}
-            className="p-1 rounded hover:bg-white/10 transition-colors"
-          >
-            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
-          </button>
+          <div className="flex items-center gap-1">
+            {/* Mobile close button */}
+            {onMobileClose && (
+              <button
+                onClick={onMobileClose}
+                className="lg:hidden p-1 rounded hover:bg-white/10 transition-colors"
+              >
+                <X size={14} className="text-white" />
+              </button>
+            )}
+            
+            {/* Desktop collapse button */}
+            <button
+              onClick={() => setCollapsed(!collapsed)}
+              className="hidden lg:block p-1 rounded hover:bg-white/10 transition-colors"
+            >
+              {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+            </button>
+          </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className="p-2 space-y-1 max-h-[calc(100vh-7rem)] overflow-y-auto">
+      <nav className="p-2 space-y-1 flex-1 overflow-y-auto mb-14">
         {menuItems.map((item, index) => {
           const Icon = item.icon
           const isActive = pathname === item.href
@@ -84,6 +106,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
             <Link
               key={item.name}
               href={item.href}
+              onClick={handleLinkClick}
               className={`group flex items-center p-1.5 rounded transition-all duration-300 hover:bg-white/10 ${
                 isActive ? 'bg-violet-500/20 neon-glow' : ''
               }`}
@@ -119,7 +142,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
 
       {/* User Info */}
       {!collapsed && (
-        <div className="absolute bottom-2 left-2 right-2">
+        <div className="p-2 absolute bottom-0 left-0 right-0">
           <div className="glass-effect rounded p-2">
             <div className="flex items-center space-x-2">
               <div className="w-5 h-5 bg-gradient-to-r from-violet-400 to-pink-400 rounded-full flex items-center justify-center">
