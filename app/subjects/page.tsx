@@ -12,7 +12,7 @@ import { withAuth } from "../../components/withAuth";
 interface Subject {
   id: string;
   category: string | undefined;
-  subjects: string | undefined;
+  subjects: string | string[] | undefined;
 }
 
 interface Column {
@@ -224,7 +224,27 @@ function Subjects() {
                 </button>
                 <button
                   onClick={async () => {
-                    // Handle save logic here
+                    if (editingItem) {
+                      // Convert subjects to array of strings
+                      const tagsArray = Array.isArray(editingItem.subjects)
+                        ? editingItem.subjects
+                        : typeof editingItem.subjects === "string"
+                        ? editingItem.subjects
+                            .split(",")
+                            .map((s) => s.trim())
+                            .filter(Boolean)
+                        : [];
+                      await updateDocument("subjects", editingItem.id, {
+                        ...editingItem,
+                        subjects: tagsArray,
+                      });
+                      setSubjects((prev) => {
+                        const updatedSubjects = prev.map((s) =>
+                          s.id === editingItem.id ? { ...editingItem, subjects: tagsArray } : s
+                        );
+                        return updatedSubjects;
+                      });
+                    }
                     setShowModal(false);
                   }}
                   className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
