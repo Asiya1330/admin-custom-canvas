@@ -195,7 +195,7 @@ function Queue() {
 
   return (
     <Layout>
-      <div className="p-8">
+      <div className="">
         <div className="mb-8 animate-fadeInUp">
           <h1 className="text-3xl font-bold text-white mb-2">Processing Queue</h1>
           <p className="text-gray-400">Monitor and manage order processing status.</p>
@@ -203,7 +203,7 @@ function Queue() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-          <div className="glass-effect rounded-xl p-4">
+          <div className="glass-effect rounded-xl p-4  border border-white/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Total Items</p>
@@ -215,7 +215,7 @@ function Queue() {
             </div>
           </div>
           
-          <div className="glass-effect rounded-xl p-4">
+          <div className="glass-effect rounded-xl p-4 border border-white/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Queued</p>
@@ -227,7 +227,7 @@ function Queue() {
             </div>
           </div>
           
-          <div className="glass-effect rounded-xl p-4">
+          <div className="glass-effect rounded-xl p-4 border border-white/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Processing</p>
@@ -239,7 +239,7 @@ function Queue() {
             </div>
           </div>
           
-          <div className="glass-effect rounded-xl p-4">
+          <div className="glass-effect rounded-xl p-4 border border-white/20">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-gray-400 text-sm">Completed</p>
@@ -253,7 +253,7 @@ function Queue() {
         </div>
 
         {/* Search and Filters */}
-        <div className="glass-effect rounded-xl p-6 mb-8">
+        <div className="glass-effect rounded-xl p-6 mb-8 border border-white/20">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">

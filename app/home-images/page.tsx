@@ -32,11 +32,12 @@ const columns: Column[] = [
     key: "file_link",
     label: "Preview",
     render: (value: string) => (
-      // if value is empty string pass dummy image
+      // if value is empty string pass dummy image 1BkfbQKBEvDvXVcSx9fk1_fCiPO1ULBlK
+      //https://drive.google.com/uc?export=view&id=FILE_ID
       <Image
         width={80}
         height={64}
-        src={!!value ? value : "/images/placeholder.png"}
+        src={!!value ? value : "/images/dummy_image.png"}
         alt=""
         className="w-20 h-16 rounded-lg object-cover"
       />
@@ -204,40 +205,47 @@ function HomeImages() {
                       Tags (comma separated)
                     </label>
                     <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                      {((typeof editingItem?.tags === "string"
+                      {(typeof editingItem?.tags === "string"
                         ? editingItem.tags
                         : Array.isArray(editingItem?.tags)
                         ? (editingItem.tags as string[]).join(",")
-                        : "")
+                        : ""
+                      )
                         .split(",")
                         .map((t: string) => t.trim())
                         .filter((t: string) => Boolean(t))
-                      ).map((tag: string, idx: number, arr: string[]) => (
-                        <span
-                          key={idx}
-                          className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
-                        >
-                          {tag}
-                          <button
-                            type="button"
-                            className="ml-1 text-violet-400 hover:text-red-400"
-                            onClick={() => {
-                              const newTags = arr.filter((_: string, i: number) => i !== idx).join(", ");
-                              setEditingItem({
-                                id: editingItem?.id ?? "",
-                                title: editingItem?.title ?? "",
-                                file_link: editingItem?.file_link ?? "",
-                                aspect_ratio: editingItem?.aspect_ratio ?? "",
-                                dimensions: editingItem?.dimensions ?? "",
-                                tags: newTags.split(",").map((t: string) => t.trim()).filter((t: string) => Boolean(t)),
-                                suggested_locations: editingItem?.suggested_locations ?? [],
-                              });
-                            }}
+                        .map((tag: string, idx: number, arr: string[]) => (
+                          <span
+                            key={idx}
+                            className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
                           >
-                            ×
-                          </button>
-                        </span>
-                      ))}
+                            {tag}
+                            <button
+                              type="button"
+                              className="ml-1 text-violet-400 hover:text-red-400"
+                              onClick={() => {
+                                const newTags = arr
+                                  .filter((_: string, i: number) => i !== idx)
+                                  .join(", ");
+                                setEditingItem({
+                                  id: editingItem?.id ?? "",
+                                  title: editingItem?.title ?? "",
+                                  file_link: editingItem?.file_link ?? "",
+                                  aspect_ratio: editingItem?.aspect_ratio ?? "",
+                                  dimensions: editingItem?.dimensions ?? "",
+                                  tags: newTags
+                                    .split(",")
+                                    .map((t: string) => t.trim())
+                                    .filter((t: string) => Boolean(t)),
+                                  suggested_locations:
+                                    editingItem?.suggested_locations ?? [],
+                                });
+                              }}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
                       <input
                         type="text"
                         className="bg-transparent outline-none text-xs text-white flex-1 min-w-[80px]"
@@ -249,11 +257,12 @@ function HomeImages() {
                           ) {
                             e.preventDefault();
                             const newTag = e.currentTarget.value.trim();
-                            const currentTags = ((typeof editingItem?.tags === "string"
-                              ? editingItem.tags
-                              : Array.isArray(editingItem?.tags)
-                              ? (editingItem.tags as string[]).join(",")
-                              : "")
+                            const currentTags = (
+                              typeof editingItem?.tags === "string"
+                                ? editingItem.tags
+                                : Array.isArray(editingItem?.tags)
+                                ? (editingItem.tags as string[]).join(",")
+                                : ""
                             )
                               .split(",")
                               .map((t: string) => t.trim())
@@ -265,7 +274,8 @@ function HomeImages() {
                               aspect_ratio: editingItem?.aspect_ratio ?? "",
                               dimensions: editingItem?.dimensions ?? "",
                               tags: [...currentTags, newTag],
-                              suggested_locations: editingItem?.suggested_locations ?? [],
+                              suggested_locations:
+                                editingItem?.suggested_locations ?? [],
                             });
                             e.currentTarget.value = "";
                           }
@@ -280,40 +290,48 @@ function HomeImages() {
                       Suggested Locations (comma separated)
                     </label>
                     <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                      {((typeof editingItem?.suggested_locations === "string"
+                      {(typeof editingItem?.suggested_locations === "string"
                         ? editingItem.suggested_locations
                         : Array.isArray(editingItem?.suggested_locations)
-                        ? (editingItem.suggested_locations as string[]).join(",")
-                        : "")
+                        ? (editingItem.suggested_locations as string[]).join(
+                            ","
+                          )
+                        : ""
+                      )
                         .split(",")
                         .map((l: string) => l.trim())
                         .filter((l: string) => Boolean(l))
-                      ).map((location: string, idx: number, arr: string[]) => (
-                        <span
-                          key={idx}
-                          className="flex items-center px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full"
-                        >
-                          {location}
-                          <button
-                            type="button"
-                            className="ml-1 text-blue-400 hover:text-red-400"
-                            onClick={() => {
-                              const newLocations = arr.filter((_: string, i: number) => i !== idx).join(", ");
-                              setEditingItem({
-                                id: editingItem?.id ?? "",
-                                title: editingItem?.title ?? "",
-                                file_link: editingItem?.file_link ?? "",
-                                aspect_ratio: editingItem?.aspect_ratio ?? "",
-                                dimensions: editingItem?.dimensions ?? "",
-                                tags: editingItem?.tags ?? [],
-                                suggested_locations: newLocations.split(",").map((l: string) => l.trim()).filter((l: string) => Boolean(l)),
-                              });
-                            }}
+                        .map((location: string, idx: number, arr: string[]) => (
+                          <span
+                            key={idx}
+                            className="flex items-center px-2 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-full"
                           >
-                            ×
-                          </button>
-                        </span>
-                      ))}
+                            {location}
+                            <button
+                              type="button"
+                              className="ml-1 text-blue-400 hover:text-red-400"
+                              onClick={() => {
+                                const newLocations = arr
+                                  .filter((_: string, i: number) => i !== idx)
+                                  .join(", ");
+                                setEditingItem({
+                                  id: editingItem?.id ?? "",
+                                  title: editingItem?.title ?? "",
+                                  file_link: editingItem?.file_link ?? "",
+                                  aspect_ratio: editingItem?.aspect_ratio ?? "",
+                                  dimensions: editingItem?.dimensions ?? "",
+                                  tags: editingItem?.tags ?? [],
+                                  suggested_locations: newLocations
+                                    .split(",")
+                                    .map((l: string) => l.trim())
+                                    .filter((l: string) => Boolean(l)),
+                                });
+                              }}
+                            >
+                              ×
+                            </button>
+                          </span>
+                        ))}
                       <input
                         type="text"
                         className="bg-transparent outline-none text-xs text-white flex-1 min-w-[80px]"
@@ -325,11 +343,17 @@ function HomeImages() {
                           ) {
                             e.preventDefault();
                             const newLocation = e.currentTarget.value.trim();
-                            const currentLocations = ((typeof editingItem?.suggested_locations === "string"
-                              ? editingItem.suggested_locations
-                              : Array.isArray(editingItem?.suggested_locations)
-                              ? (editingItem.suggested_locations as string[]).join(",")
-                              : "")
+                            const currentLocations = (
+                              typeof editingItem?.suggested_locations ===
+                              "string"
+                                ? editingItem.suggested_locations
+                                : Array.isArray(
+                                    editingItem?.suggested_locations
+                                  )
+                                ? (
+                                    editingItem.suggested_locations as string[]
+                                  ).join(",")
+                                : ""
                             )
                               .split(",")
                               .map((l: string) => l.trim())
@@ -341,7 +365,10 @@ function HomeImages() {
                               aspect_ratio: editingItem?.aspect_ratio ?? "",
                               dimensions: editingItem?.dimensions ?? "",
                               tags: editingItem?.tags ?? [],
-                              suggested_locations: [...currentLocations, newLocation],
+                              suggested_locations: [
+                                ...currentLocations,
+                                newLocation,
+                              ],
                             });
                             e.currentTarget.value = "";
                           }
@@ -406,12 +433,33 @@ function HomeImages() {
                 <button
                   onClick={async () => {
                     const formData = {
-                      title: (document.getElementById("edit-title") as HTMLInputElement)?.value || "",
-                      file_link: (document.getElementById("edit-file_link") as HTMLInputElement)?.value || "",
-                      aspect_ratio: (document.getElementById("edit-aspect_ratio") as HTMLInputElement)?.value || "",
-                      dimensions: (document.getElementById("edit-dimensions") as HTMLInputElement)?.value || "",
+                      title:
+                        (
+                          document.getElementById(
+                            "edit-title"
+                          ) as HTMLInputElement
+                        )?.value || "",
+                      file_link:
+                        (
+                          document.getElementById(
+                            "edit-file_link"
+                          ) as HTMLInputElement
+                        )?.value || "",
+                      aspect_ratio:
+                        (
+                          document.getElementById(
+                            "edit-aspect_ratio"
+                          ) as HTMLInputElement
+                        )?.value || "",
+                      dimensions:
+                        (
+                          document.getElementById(
+                            "edit-dimensions"
+                          ) as HTMLInputElement
+                        )?.value || "",
                       tags: editingItem?.tags || [],
-                      suggested_locations: editingItem?.suggested_locations || [],
+                      suggested_locations:
+                        editingItem?.suggested_locations || [],
                     };
 
                     if (editingItem) {
@@ -433,4 +481,4 @@ function HomeImages() {
   );
 }
 
-export default withAuth(HomeImages)
+export default withAuth(HomeImages);
