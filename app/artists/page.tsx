@@ -11,6 +11,7 @@ import {
 } from "../../services/crud";
 import EditModal from "../../components/EditModal";
 import { withAuth } from "../../components/withAuth";
+import Loader from "../../components/Loader";
 
 interface Artist {
   id: string;
@@ -89,11 +90,7 @@ function Artists() {
   if (loading) {
     return (
       <Layout>
-        <div className=" ">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-white">Loading artists...</div>
-          </div>
-        </div>
+        <Loader />
       </Layout>
     );
   }
@@ -149,37 +146,40 @@ function Artists() {
                 Tags (comma separated)
               </label>
               <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                {((typeof editingItem?.tags === "string"
+                {(typeof editingItem?.tags === "string"
                   ? editingItem.tags
                   : Array.isArray(editingItem?.tags)
                   ? (editingItem.tags as string[]).join(",")
-                  : "")
+                  : ""
+                )
                   .split(",")
                   .map((t: string) => t.trim())
                   .filter((t: string) => Boolean(t))
-                ).map((tag: string, idx: number, arr: string[]) => (
-                  <span
-                    key={idx}
-                    className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
-                  >
-                    {tag}
-                    <button
-                      type="button"
-                      className="ml-1 text-violet-400 hover:text-red-400"
-                      onClick={() => {
-                        const newTags = arr.filter((_: string, i: number) => i !== idx).join(", ");
-                        setEditingItem({
-                          id: editingItem?.id ?? "",
-                          name: editingItem?.name ?? "",
-                          artist_name: editingItem?.artist_name ?? "",
-                          tags: newTags,
-                        });
-                      }}
+                  .map((tag: string, idx: number, arr: string[]) => (
+                    <span
+                      key={idx}
+                      className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
                     >
-                      ×
-                    </button>
-                  </span>
-                ))}
+                      {tag}
+                      <button
+                        type="button"
+                        className="ml-1 text-violet-400 hover:text-red-400"
+                        onClick={() => {
+                          const newTags = arr
+                            .filter((_: string, i: number) => i !== idx)
+                            .join(", ");
+                          setEditingItem({
+                            id: editingItem?.id ?? "",
+                            name: editingItem?.name ?? "",
+                            artist_name: editingItem?.artist_name ?? "",
+                            tags: newTags,
+                          });
+                        }}
+                      >
+                        ×
+                      </button>
+                    </span>
+                  ))}
                 <input
                   type="text"
                   className="bg-transparent outline-none text-xs text-white flex-1 min-w-[80px]"
@@ -191,11 +191,12 @@ function Artists() {
                     ) {
                       e.preventDefault();
                       const newTag = e.currentTarget.value.trim();
-                      const currentTags = ((typeof editingItem?.tags === "string"
-                        ? editingItem.tags
-                        : Array.isArray(editingItem?.tags)
-                        ? (editingItem.tags as string[]).join(",")
-                        : "")
+                      const currentTags = (
+                        typeof editingItem?.tags === "string"
+                          ? editingItem.tags
+                          : Array.isArray(editingItem?.tags)
+                          ? (editingItem.tags as string[]).join(",")
+                          : ""
                       )
                         .split(",")
                         .map((t: string) => t.trim())
@@ -280,4 +281,4 @@ function Artists() {
   );
 }
 
-export default withAuth(Artists)
+export default withAuth(Artists);

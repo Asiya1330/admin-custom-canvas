@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../contexts/AuthContext'
+import Loader from './Loader'
 
 export function withAuth<P extends object>(
   WrappedComponent: React.ComponentType<P>
@@ -20,9 +21,7 @@ export function withAuth<P extends object>(
     // Show loading state while checking authentication
     if (loading) {
       return (
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-white">Loading...</div>
-        </div>
+        <Loader />
       )
     }
 

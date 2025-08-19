@@ -7,6 +7,7 @@ import { PaginationParams, PaginatedResult } from '../../services/crud'
 import Image from 'next/image'
 import Link from 'next/link'
 import { withAuth } from '../../components/withAuth'
+import Loader from '../../components/Loader'
 
 interface User {
     id: string;
@@ -127,11 +128,7 @@ function Users() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-4">
-          <div className="flex items-center justify-center h-32">
-            <div className="text-white text-sm">Loading users...</div>
-          </div>
-        </div>
+       <Loader />
       </Layout>
     );
   }

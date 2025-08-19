@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '../../contexts/AuthContext'
 import { Mail } from 'lucide-react'
+import Loader from '../../components/Loader'
 
 export default function Login() {
   const [email, setEmail] = useState('')
@@ -45,9 +46,7 @@ export default function Login() {
   // Show loading while checking authentication
   if (authLoading) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center p-2">
-        <div className="text-white">Loading...</div>
-      </div>
+     <Loader />
     )
   }
 

@@ -1,18 +1,15 @@
 'use client'
 
-import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { 
   Users, 
   Image, 
-  ShoppingCart, 
   Package, 
   Palette, 
   BookOpen, 
   Home,
   Settings,
-  UserPlus,
   ChevronLeft,
   ChevronRight,
   Database,
@@ -40,17 +37,16 @@ const menuItems: MenuItem[] = [
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Images', href: '/images', icon: Image },
   { name: 'Products', href: '/products', icon: Package },
-  { name: 'Orders', href: '/orders', icon: ShoppingCart },
   { name: 'Home Images', href: '/home-images', icon: Database, editable: true },
   { name: 'Artists', href: '/artists', icon: Palette, editable: true },
   { name: 'Subjects', href: '/subjects', icon: BookOpen, editable: true },
-  { name: 'Processing Queue', href: '/queue', icon: Activity },
+  { name: 'Orders Details', href: '/queue', icon: Activity },
   { name: 'Settings', href: '/settings', icon: Settings },
 ]
 
 export default function Sidebar({ collapsed, setCollapsed, onMobileClose }: SidebarProps) {
   const pathname = usePathname()
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
   const handleLinkClick = () => {
     // Close mobile menu when a link is clicked
@@ -71,7 +67,7 @@ export default function Sidebar({ collapsed, setCollapsed, onMobileClose }: Side
               <h1 className="text-sm font-bold bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">
                 Admin Portal
               </h1>
-              <p className="text-xs text-gray-400 mt-0.5">Firebase Management</p>
+              <p className="text-xs text-gray-400 mt-0.5">Custom Canvas</p>
             </div>
           )}
           <div className="flex items-center gap-1">

@@ -7,6 +7,8 @@ interface Column<T> {
   key: keyof T | string;
   label: string;
   render?: (value: any, item: T) => React.ReactNode;
+  width?: string;
+  align?: "left" | "center" | "right";
 }
 
 interface DataTableProps<T> {
@@ -172,7 +174,11 @@ export default function DataTable<T extends { id?: string | number }>({
                 className="border-b border-white/5 hover:bg-white/5 transition-colors"
               >
                 {columns.map((column) => (
-                  <td key={column.key as string} className="p-2">
+                  <td
+                    key={column.key as string}
+                    className="p-2"
+                    style={{ width: column.width ? column.width : "auto" }}
+                  >
                     {column.render ? (
                       column.render(item[column.key as keyof T], item)
                     ) : (
@@ -364,7 +370,7 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
                       </button>
                       {/* //disable delete */}
                       <button
-                        disabled  
+                        disabled
                         onClick={() => onDelete?.(item)}
                         className="p-1 text-gray-500 cursor-not-allowed opacity-50"
                         title="Delete disabled"

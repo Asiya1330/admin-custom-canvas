@@ -10,6 +10,7 @@ import {
 } from "../../services/crud";
 import Image from "next/image";
 import { withAuth } from "../../components/withAuth";
+import Loader from "../../components/Loader";
 
 interface HomeImage {
   id: string;
@@ -25,6 +26,7 @@ interface Column {
   key: string;
   label: string;
   render?: (value: any) => React.ReactNode | string;
+  width?: string;
 }
 
 const columns: Column[] = [
@@ -43,7 +45,7 @@ const columns: Column[] = [
       />
     ),
   },
-  { key: "title", label: "Title" },
+  { key: "title", label: "Title", width: "200px" },
   { key: "aspect_ratio", label: "Aspect Ratio" },
   { key: "dimensions", label: "Dimensions" },
   {
@@ -155,11 +157,7 @@ function HomeImages() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-white">Loading home images...</div>
-          </div>
-        </div>
+       <Loader />
       </Layout>
     );
   }

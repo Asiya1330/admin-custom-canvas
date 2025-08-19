@@ -7,6 +7,7 @@ import Layout from '../components/Layout'
 import { Users, Image, ShoppingCart, Package, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { getDashboardStats, getDashboardTrends } from '../services/crud'
 import { withAuth } from '../components/withAuth'
+import Loader from '../components/Loader'
 
 interface StatCard {
   title: string
@@ -78,9 +79,7 @@ function Dashboard() {
   if (statsLoading) {
     return (
       <Layout>
-        <div className="min-h-screen bg-gray-900 flex items-center justify-center">
-          <div className="text-white">Loading...</div>
-        </div>
+       <Loader />
       </Layout>
     )
   }

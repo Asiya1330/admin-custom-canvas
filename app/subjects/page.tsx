@@ -8,6 +8,7 @@ import {
   updateDocument,
 } from "../../services/crud";
 import { withAuth } from "../../components/withAuth";
+import Loader from "../../components/Loader";
 
 interface Subject {
   id: string;
@@ -19,15 +20,19 @@ interface Column {
   key: string;
   label: string;
   render?: (value: any) => React.ReactNode | string;
+  width?: string;
+  align?: "left" | "center" | "right";
 }
 
 const columns: Column[] = [
-  { key: "category", label: "Category" },
+  { key: "category", label: "Category", width:"100px" },
   {
     key: "subjects",
     label: "Subjects",
+    width:"calc(100vw - 100px)",
+    align:"left",
     render: (value: string[] | string | undefined) => (
-      <div className="flex flex-nowrap gap-1 overflow-x-auto w-full">
+      <div className="flex flex-wrap gap-1 overflow-x-auto w-full" style={{ width: "100%" }}>
         {(Array.isArray(value)
           ? value
           : typeof value === "string" && value
@@ -101,11 +106,7 @@ function Subjects() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-8">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-white">Loading subjects...</div>
-          </div>
-        </div>
+      <Loader />
       </Layout>
     );
   }

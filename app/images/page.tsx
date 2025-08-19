@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { getImages, deleteDocument } from '../../services/crud'
 import Image from 'next/image'
 import { withAuth } from '../../components/withAuth'
+import Loader from '../../components/Loader'
 
 interface Image {
     id: string
@@ -21,20 +22,22 @@ interface Column {
     key: string
     label: string
     render?: (value: any) => React.ReactNode | string
+    width?: string
 }
 
 const columns: Column[] = [
     {
         key: 'imageUrl',
         label: 'Preview',
+        width: 'fit-content',
         render: (value: string) => (
             <Image width={64} height={64} src={value} alt="" className="w-16 h-16 rounded-lg object-cover" />
         )
     },
-    { key: 'name', label: 'Name' },
-    { key: 'description', label: 'Description' },
-    { key: 'aspectRatio', label: 'Aspect Ratio' },
-    { key: 'size', label: 'Size' },
+    { key: 'name', label: 'Name', width: '200px' },
+    { key: 'description', label: 'Description', width: '400px' },
+    { key: 'aspectRatio', label: 'Aspect Ratio', width: '100px' },
+    { key: 'size', label: 'Size', width: '100px' },
     {
         key: 'createdAt',
         label: 'Created',
@@ -81,11 +84,7 @@ function Images() {
   if (loading) {
     return (
       <Layout>
-        <div className=" ">
-          <div className="flex items-center justify-center h-64">
-            <div className="text-white">Loading images...</div>
-          </div>
-        </div>
+      <Loader />
       </Layout>
     );
   }

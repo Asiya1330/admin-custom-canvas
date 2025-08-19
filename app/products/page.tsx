@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import { getProducts, deleteDocument } from '../../services/crud'
 import Image from 'next/image'
 import { withAuth } from '../../components/withAuth'
+import Loader from '../../components/Loader'
 
 interface Product {
     id: string
@@ -85,11 +86,7 @@ function Products() {
   if (loading) {
     return (
       <Layout>
-        <div className="p-4">
-          <div className="flex items-center justify-center h-32">
-            <div className="text-white text-sm">Loading products...</div>
-          </div>
-        </div>
+      <Loader />
       </Layout>
     );
   }
