@@ -4,7 +4,7 @@ import React from "react";
 import { withAuth } from "@/components/withAuth";
 
 const Settings = () => {
-  return <Layout>Seetings</Layout>;
+  return <Layout>Settings</Layout>;
 };
 
 export default withAuth(Settings);

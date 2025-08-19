@@ -12,9 +12,16 @@ import {
   Eye,
 } from "lucide-react";
 import { useEffect, useState, useMemo } from "react";
-import { getQueueItems, getQueueItemWithOrder } from "../../services/crud";
+import {
+  getQueueItems,
+  getQueueItemWithOrder,
+  getSingleUser,
+} from "../../services/crud";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
+import OrderModal from "@/components/OrderModal";
+import { User } from "../../contexts/AuthContext";
+import { notFound } from "next/navigation";
 
 interface ProcessingData {
   status: string;
@@ -96,6 +103,7 @@ function Queue() {
   const [selectedItem, setSelectedItem] = useState<QueueItem | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [loadingOrder, setLoadingOrder] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
     const fetchQueueItems = async () => {
@@ -175,6 +183,9 @@ function Queue() {
     try {
       const itemWithOrder = await getQueueItemWithOrder(item.orderId);
       if (itemWithOrder) {
+        const user = await getSingleUser(itemWithOrder.order.userId);
+        setUser(user as User);
+        if (!user) return;
         setSelectedItem(itemWithOrder);
         setModalOpen(true);
       }
@@ -205,7 +216,7 @@ function Queue() {
   if (loading) {
     return (
       <Layout>
-       <Loader />
+        <Loader />
       </Layout>
     );
   }
@@ -284,11 +295,13 @@ function Queue() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Search */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" size={16} />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4"
+                size={16}
+              />
               <input
                 type="text"
                 placeholder="Search by Order ID..."
-
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="text-xs ::placeholder:text-xs w-full pl-10 pr-4 py-2 bg-white/10  border border-white/20 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -319,7 +332,6 @@ function Queue() {
                 </option>
               </select>
             </div>
-
 
             {/* Sort */}
             <div className="flex gap-2">
@@ -369,69 +381,68 @@ function Queue() {
                 className="relative border border-white/20 glass-effect rounded-xl p-6 hover:scale-[1.02] transition-transform duration-300 cursor-pointer"
                 onClick={() => handleViewDetails(item)}
               >
-
                 <div className="mb-10">
-                {/* Card Header */}
+                  {/* Card Header */}
 
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex gap-1">
-                    <p className="text-gray-400 text-xs">Order ID:</p>
-                    <p className="text-gray-400 text-xs">
-                      {item.orderId.slice(-10)}
-                    </p>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex gap-1">
+                      <p className="text-gray-400 text-xs">Order ID:</p>
+                      <p className="text-gray-400 text-xs">
+                        {item.orderId.slice(-10)}
+                      </p>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      {getStatusIcon(item.status)}
+                    </div>
                   </div>
-                  <div className="flex items-center space-x-2">
-                    {getStatusIcon(item.status)}
-                  </div>
-                </div>
 
-                {/* Order Info */}
-                <div className="mb-4">
-                  <p className="text-gray-400 text-xs">
-                    Created:{" "}
-                    {item.createdAt?.toDate
-                      ? new Date(item.createdAt.toDate()).toLocaleDateString()
-                      : "Unknown"}
-                  </p>
-                  {item.processedAt && (
+                  {/* Order Info */}
+                  <div className="mb-4">
                     <p className="text-gray-400 text-xs">
-                      Processed:{" "}
-                      {item.processedAt?.toDate
-                        ? new Date(
-                            item.processedAt.toDate()
-                          ).toLocaleDateString()
+                      Created:{" "}
+                      {item.createdAt?.toDate
+                        ? new Date(item.createdAt.toDate()).toLocaleDateString()
                         : "Unknown"}
                     </p>
-                  )}
-                </div>
-
-
-                {/* Processing Status */}
-                {item.processingData && (
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 text-xs">Lumaprint:</span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                          item.processingData.lumaprintStatus
-                        )}`}
-                      >
-                        {item.processingData.lumaprintStatus}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-xs">
-                      <span className="text-gray-400 text-xs">Topaz:</span>
-                      <span
-                        className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
-                          item.processingData.topazStatus
-                        )}`}
-                      >
-                        {item.processingData.topazStatus}
-                      </span>
-                    </div>
+                    {item.processedAt && (
+                      <p className="text-gray-400 text-xs">
+                        Processed:{" "}
+                        {item.processedAt?.toDate
+                          ? new Date(
+                              item.processedAt.toDate()
+                            ).toLocaleDateString()
+                          : "Unknown"}
+                      </p>
+                    )}
                   </div>
-                )}
 
+                  {/* Processing Status */}
+                  {item.processingData && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400 text-xs">
+                          Lumaprint:
+                        </span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                            item.processingData.lumaprintStatus
+                          )}`}
+                        >
+                          {item.processingData.lumaprintStatus}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="text-gray-400 text-xs">Topaz:</span>
+                        <span
+                          className={`px-2 py-1 rounded-full text-xs ${getStatusColor(
+                            item.processingData.topazStatus
+                          )}`}
+                        >
+                          {item.processingData.topazStatus}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* View Details Button */}
@@ -463,11 +474,13 @@ function Queue() {
 
         {/* Modal */}
         <QueueModal
+          user={user}
           item={selectedItem}
           isOpen={modalOpen}
           onClose={() => {
             setModalOpen(false);
             setSelectedItem(null);
+            setUser(null);
           }}
         />
       </div>

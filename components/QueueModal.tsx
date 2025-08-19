@@ -1,7 +1,19 @@
-'use client'
+"use client";
 
-import { X, Clock, CheckCircle, XCircle, AlertCircle, Package, Calendar, DollarSign, User } from "lucide-react";
+import {
+  X,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  Package,
+  Calendar,
+  DollarSign,
+} from "lucide-react";
+import moment from "moment";
 import Image from "next/image";
+import { ReactNode } from "react";
+import { User } from "../contexts/AuthContext";
 
 interface ProcessingData {
   status: string;
@@ -16,8 +28,8 @@ interface ProcessingData {
 interface QueueItem {
   id: string;
   orderId: string;
-  status: 'queued' | 'processing' | 'completed' | 'failed' | 'unknown';
-  priority: 'low' | 'medium' | 'high';
+  status: "queued" | "processing" | "completed" | "failed" | "unknown";
+  priority: "low" | "medium" | "high";
   createdAt: any;
   processedAt?: any;
   processed: boolean;
@@ -29,19 +41,20 @@ interface QueueModalProps {
   item: QueueItem | null;
   isOpen: boolean;
   onClose: () => void;
+  user: User | null;
 }
 
 const getStatusIcon = (status: string) => {
   switch (status) {
-    case 'completed':
+    case "completed":
       return <CheckCircle size={16} className="text-green-400" />;
-    case 'success':
+    case "success":
       return <CheckCircle size={16} className="text-green-400" />;
-    case 'processing':
+    case "processing":
       return <Clock size={16} className="text-yellow-400" />;
-    case 'failed':
+    case "failed":
       return <XCircle size={16} className="text-red-400" />;
-    case 'queued':
+    case "queued":
       return <Clock size={16} className="text-blue-400" />;
     default:
       return <AlertCircle size={16} className="text-gray-400" />;
@@ -50,33 +63,38 @@ const getStatusIcon = (status: string) => {
 
 const getPriorityColor = (priority: string) => {
   switch (priority) {
-    case 'high':
-      return 'bg-red-500/20 text-red-400';
-    case 'medium':
-      return 'bg-yellow-500/20 text-yellow-400';
+    case "high":
+      return "bg-red-500/20 text-red-400";
+    case "medium":
+      return "bg-yellow-500/20 text-yellow-400";
     default:
-      return 'bg-green-500/20 text-green-400';
+      return "bg-green-500/20 text-green-400";
   }
 };
 
 const getStatusColor = (status: string) => {
   switch (status) {
-    case 'completed':
-      return 'bg-green-500/20 text-green-400';
-    case 'success':
-      return 'bg-green-500/20 text-green-400';
-    case 'processing':
-      return 'bg-yellow-500/20 text-yellow-400';
-    case 'failed':
-      return 'bg-red-500/20 text-red-400';
-    case 'queued':
-      return 'bg-blue-500/20 text-blue-400';
+    case "completed":
+      return "bg-green-500/20 text-green-400";
+    case "success":
+      return "bg-green-500/20 text-green-400";
+    case "processing":
+      return "bg-yellow-500/20 text-yellow-400";
+    case "failed":
+      return "bg-red-500/20 text-red-400";
+    case "queued":
+      return "bg-blue-500/20 text-blue-400";
     default:
-      return 'bg-gray-500/20 text-gray-400';
+      return "bg-gray-500/20 text-gray-400";
   }
 };
 
-export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
+export default function QueueModal({
+  user,
+  item,
+  isOpen,
+  onClose,
+}: QueueModalProps) {
   if (!isOpen || !item) return null;
 
   const formatDate = (date: any) => {
@@ -105,74 +123,25 @@ export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
           {/* Order Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white">Order</h3>
-              <p className="text-gray-400 text-sm">Created on {formatDate(item.createdAt)}</p>
+              <p className="text-gray-400 text-sm">
+                Created on{" "}
+                {moment(item.createdAt.toDate()).format("MMMM D, YYYY")}
+              </p>
             </div>
-            <div className="text-right">
-              <div className="flex items-center space-x-2 mb-2">
-                <span className={`px-3 py-1 text-xs rounded-full ${getPriorityColor(item.priority)}`}>
-                  {item.priority} Priority
-                </span>
+            <div className="text-right flex items-center gap-1 justify-center">
+              <div className="flex items-center">
                 {getStatusIcon(item.status)}
               </div>
-              <span className={`px-3 py-1 text-xs rounded-full ${getStatusColor(item.status)}`}>
+              <span
+                className={`px-3 py-1 text-xs rounded-full ${getStatusColor(
+                  item.status
+                )}`}
+              >
                 {item.status.toUpperCase()}
               </span>
             </div>
           </div>
 
-          {/* Processing Status */}
-          <div className="bg-white/5 rounded-xl p-4">
-            <h4 className="text-white font-semibold mb-4">Processing Status</h4>
-            {item.processingData ? (
-              <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-4 bg-white/5 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm font-medium text-white">Lumaprint</span>
-                      {getStatusIcon(item.processingData.lumaprintStatus)}
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(item.processingData.lumaprintStatus)}`}>
-                      {item.processingData.lumaprintStatus}
-                    </span>
-                    {item.processingData.lumaprintError && (
-                      <p className="text-red-400 text-xs mt-2">{item.processingData.lumaprintError}</p>
-                    )}
-                  </div>
-                  
-                  <div className="p-4 bg-white/5 rounded-lg">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <span className="text-sm font-medium text-white">Topaz</span>
-                      {getStatusIcon(item.processingData.topazStatus)}
-                    </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusColor(item.processingData.topazStatus)}`}>
-                      {item.processingData.topazStatus}
-                    </span>
-                    {item.processingData.topazError && (
-                      <p className="text-green-400 text-xs mt-2">{item.processingData.topazError}</p>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="w-4 h-4 text-gray-400" />
-                    <span className="text-gray-400">Queued:</span>
-                    <span className="text-white">{formatDate(item.processingData.queuedAt)}</span>
-                  </div>
-                  {item.processingData.completedAt && (
-                    <div className="flex items-center space-x-2">
-                      <CheckCircle className="w-4 h-4 text-green-400" />
-                      <span className="text-gray-400">Completed:</span>
-                      <span className="text-white">{formatDate(item.processingData.completedAt)}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ) : (
-              <p className="text-gray-400 text-sm">No processing data available</p>
-            )}
-          </div>
 
           {/* Order Information */}
           {item.order && (
@@ -180,18 +149,44 @@ export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
               {/* Customer Information */}
               <div className="bg-white/5 rounded-xl p-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <User className="w-5 h-5 text-blue-400" />
-                  <h4 className="text-white font-semibold">Customer Information</h4>
+                  <Image
+                    src={user?.photoURL || ""}
+                    alt="User"
+                    width={20}
+                    height={20}
+                    className="rounded-full"
+                  />
+                  <h4 className="text-white font-semibold">
+                    Customer Information
+                  </h4>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <p className="text-gray-400 text-sm">Name</p>
-                    <p className="text-white">{item.order.shippingAddress?.name || 'N/A'}</p>
+                    <p className="text-white">{user?.displayName || "N/A"}</p>
                   </div>
                   <div>
                     <p className="text-gray-400 text-sm">Email</p>
-                    <p className="text-white">{item.order.userEmail || 'N/A'}</p>
+                    <p className="text-white">{user?.email || "N/A"}</p>
                   </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {item.order.shippingAddress && (
+                    <>
+                      <div>
+                        <p className="text-gray-400 text-sm">City</p>
+                        <p className="text-white">
+                          {item.order.shippingAddress.city || "N/A"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-gray-400 text-sm">Country</p>
+                        <p className="text-white">
+                          {item.order.shippingAddress.country || "N/A"}
+                        </p>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -199,13 +194,18 @@ export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
               <div className="bg-white/5 rounded-xl p-4">
                 <div className="flex items-center gap-3 mb-4">
                   <Package className="w-5 h-5 text-purple-400" />
-                  <h4 className="text-white font-semibold">Products ({item.order.products?.length || 0})</h4>
+                  <h4 className="text-white font-semibold">
+                    Products ({item.order.products?.length || 0})
+                  </h4>
                 </div>
-                
+
                 {item.order.products && item.order.products.length > 0 ? (
                   <div className="space-y-3">
                     {item.order.products.map((product: any, index: number) => (
-                      <div key={index} className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center gap-4 p-3 bg-white/5 rounded-lg"
+                      >
                         {product.productDetails?.imageUrl ? (
                           <Image
                             src={product.productDetails.imageUrl}
@@ -219,10 +219,11 @@ export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
                             <Package className="w-6 h-6 text-gray-400" />
                           </div>
                         )}
-                        
+
                         <div className="flex-1">
                           <h5 className="text-white font-medium">
-                            {product.productDetails?.name || `Product ${index + 1}`}
+                            {product.productDetails?.name ||
+                              `Product ${index + 1}`}
                           </h5>
                           <p className="text-gray-400 text-sm">
                             Quantity: {product.quantity || 1}
@@ -233,17 +234,23 @@ export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
                             </p>
                           )}
                         </div>
-                        
+
                         <div className="text-right">
                           <p className="text-white font-semibold">
-                            ${((product.productDetails?.price || 0) * (product.quantity || 1)).toFixed(2)}
+                            $
+                            {(
+                              (product.productDetails?.price || 0) *
+                              (product.quantity || 1)
+                            ).toFixed(2)}
                           </p>
                         </div>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-gray-400 text-sm">No products found in this order.</p>
+                  <p className="text-gray-400 text-sm">
+                    No products found in this order.
+                  </p>
                 )}
               </div>
 
@@ -262,9 +269,8 @@ export default function QueueModal({ item, isOpen, onClose }: QueueModalProps) {
               </div>
             </>
           )}
-
         </div>
       </div>
     </div>
   );
-} 
+}

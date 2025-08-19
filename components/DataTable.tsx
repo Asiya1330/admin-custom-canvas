@@ -106,12 +106,12 @@ export default function DataTable<T extends { id?: string | number }>({
               className="flex items-center space-x-1 px-2 py-1 bg-green-500/20 text-green-400 rounded text-xs hover:bg-green-500/30 transition-colors"
             >
               <Plus size={12} />
-              <span>Add New</span>
+              <span className="text-xs">Add New</span>
             </button>
           )}
           <button className="flex items-center space-x-1 px-2 py-1 bg-blue-500/20 text-blue-400 rounded text-xs hover:bg-blue-500/30 transition-colors">
             <Download size={12} />
-            <span>Export</span>
+            <span className="text-xs">Export</span>
           </button>
         </div>
       </div>
@@ -133,7 +133,7 @@ export default function DataTable<T extends { id?: string | number }>({
         </div>
         <button className="flex items-center space-x-1 px-2 py-1.5 bg-white/5 border border-white/10 rounded text-xs hover:bg-white/10 transition-colors">
           <Filter size={12} />
-          <span>Filter</span>
+          <span className="text-xs">Filter</span>
         </button>
       </div>
 
@@ -291,12 +291,12 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
               className="flex items-center space-x-2 px-4 py-2 bg-green-500/20 text-green-400 rounded-lg hover:bg-green-500/30 transition-colors"
             >
               <Plus size={16} />
-              <span>Add New</span>
+              <span className="text-xs">Add New</span>
             </button>
           )}
           <button className="flex items-center space-x-2 px-4 py-2 bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-colors">
             <Download size={16} />
-            <span>Export</span>
+            <span className="text-xs">Export</span>
           </button>
         </div>
       </div>
@@ -313,12 +313,12 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
             placeholder="Search..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white placeholder-gray-400"
+            className="w-full pl-10 pr-4 py-2 text-xs ::placeholder:text-xs bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white placeholder-gray-400"
           />
         </div>
         <button className="flex items-center space-x-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 transition-colors">
           <Filter size={16} />
-          <span>Filter</span>
+          <span className="text-xs">Filter</span>
         </button>
       </div>
 

@@ -35,12 +35,10 @@ function UserProfilePage({ params }: Props) {
 
   // Fetch user
   useEffect(() => {
-    console.log(id, "id");
     const func = async () => {
       const user = await getSingleUser(id);
-      console.log(user, "user");
       setUser(user as User);
-      if (!user) return notFound();
+      if (!user) return;
 
       // Fetch orders for this user
       let orders = await getOrdersByUserId(id);

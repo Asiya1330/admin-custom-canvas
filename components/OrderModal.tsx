@@ -1,6 +1,7 @@
 "use client";
 import { X, Package, User, MapPin, Calendar, DollarSign } from "lucide-react";
 import Image from "next/image";
+import moment from "moment";
 
 interface OrderModalProps {
   order: any;
@@ -38,8 +39,7 @@ export default function OrderModal({ order, user, isOpen, onClose }: OrderModalP
           {/* Order Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-lg font-semibold text-white">Order #{order.orderId}</h3>
-              <p className="text-gray-400 text-sm">Created on {formatDate(order.createdAt)}</p>
+              <p className="text-gray-400 text-sm">Created on {moment(order.createdAt.toDate()).format("MMMM D, YYYY")}</p>
             </div>
             <div className="text-right">
               <p className="text-2xl font-bold text-white">
@@ -60,7 +60,7 @@ export default function OrderModal({ order, user, isOpen, onClose }: OrderModalP
           {/* User Information */}
           <div className="bg-white/5 rounded-xl p-4">
             <div className="flex items-center gap-3 mb-3">
-              <User className="w-5 h-5 text-blue-400" />
+              <Image src={user?.photoURL || ""} alt="User" width={20} height={20} className="rounded-full" />
               <h4 className="text-white font-semibold">Customer Information</h4>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
