@@ -6,7 +6,7 @@ import { getImages, deleteDocument } from '../../services/crud'
 import Image from 'next/image'
 import { withAuth } from '../../components/withAuth'
 import Loader from '../../components/Loader'
-import { ImageRender } from '../home-images/page'
+import ImageRender from '@/components/ImageRender'
 
 interface Image {
     id: string

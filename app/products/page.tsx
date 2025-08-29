@@ -3,11 +3,9 @@ import Layout from "../../components/Layout";
 import DataTable from "../../components/DataTable";
 import { useEffect, useState } from "react";
 import { getProducts, deleteDocument } from "../../services/crud";
-import Image from "next/image";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
-import { Eye, XIcon } from "lucide-react";
-import { ImageRender } from "../home-images/page";
+import ImageRender from "@/components/ImageRender";
 
 interface Product {
   id: string;

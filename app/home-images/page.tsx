@@ -10,8 +10,7 @@ import {
 import Image from "next/image";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
-import { Eye } from "lucide-react";
-import ImagePreview from "../../components/ImageModal";
+import ImageRender from "@/components/ImageRender";
 
 interface HomeImage {
   id: string;
@@ -29,42 +28,6 @@ interface Column {
   render?: (value: any) => React.ReactNode | string;
   width?: string;
 }
-
-export const ImageRender = ({
-  url,
-  containerClassName,
-  className,
-  alt,
-  width,
-  height,
-}: {
-  url: string;
-  containerClassName?: string;
-  className?: string;
-  alt?: string;
-  width?: number;
-  height?: number;
-}) => {
-  const [open, setOpen] = useState(false);
-  return (
-    <div className={`relative ${containerClassName}`}>
-      <div
-        className="absolute top-0 right-0 bg-black/50 rounded-lg p-1 cursor-pointer"
-        onClick={() => setOpen(true)}
-      >
-        <Eye className="w-4 h-4 text-white" />
-      </div>
-      <Image
-        width={width || 80}
-        height={height || 64}
-        src={url}
-        alt={alt || ""}
-        className={className ? className : `w-20 h-16 rounded-lg object-cover`}
-      />
-      <ImagePreview open={open} onClose={() => setOpen(false)} imageUrl={url} />
-    </div>
-  );
-};
 
 const columns: Column[] = [
   {

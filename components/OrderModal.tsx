@@ -2,7 +2,7 @@
 import { X, Package, User, MapPin, Calendar, DollarSign } from "lucide-react";
 import Image from "next/image";
 import moment from "moment";
-import { ImageRender } from "../app/home-images/page";
+import ImageRender from "@/components/ImageRender";
 
 interface OrderModalProps {
   order: any;

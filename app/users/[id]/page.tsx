@@ -5,17 +5,16 @@ import {
   getOrdersByUserId,
   getSingleOrder,
 } from "../../../services/crud";
-import { notFound } from "next/navigation";
 import Image from "next/image";
 import { use, useEffect, useState } from "react";
 import { User } from "../../../contexts/AuthContext";
 import Layout from "@/components/Layout";
 import OrderModal from "@/components/OrderModal";
 import { Crown, Search, Package, Calendar, DollarSign } from "lucide-react";
-import { getDocs, collection, query, where } from "firebase/firestore";
+import { getDocs, collection } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import { withAuth } from "@/components/withAuth";
-import { ImageRender } from "../../home-images/page";
+import ImageRender from "@/components/ImageRender";
 
 interface Props {
   params: Promise<{ id: string }>;

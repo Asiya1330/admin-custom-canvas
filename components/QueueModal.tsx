@@ -7,14 +7,12 @@ import {
   XCircle,
   AlertCircle,
   Package,
-  Calendar,
   DollarSign,
 } from "lucide-react";
 import moment from "moment";
 import Image from "next/image";
-import { ReactNode } from "react";
 import { User } from "../contexts/AuthContext";
-import { ImageRender } from "@/app/home-images/page";
+import ImageRender from "@/components/ImageRender";
 
 interface ProcessingData {
   status: string;
