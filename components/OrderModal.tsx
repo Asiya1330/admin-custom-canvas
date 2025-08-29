@@ -2,6 +2,7 @@
 import { X, Package, User, MapPin, Calendar, DollarSign } from "lucide-react";
 import Image from "next/image";
 import moment from "moment";
+import { ImageRender } from "../app/home-images/page";
 
 interface OrderModalProps {
   order: any;
@@ -111,13 +112,20 @@ export default function OrderModal({ order, user, isOpen, onClose }: OrderModalP
                 {order.products.map((product: any, index: number) => (
                   <div key={index} className="flex items-center gap-4 p-3 bg-white/5 rounded-lg">
                     {product.productDetails?.imageUrl ? (
-                      <Image
-                        src={product.productDetails.imageUrl}
+                      <ImageRender
+                        url={product.productDetails.imageUrl}
                         alt={product.productDetails.name || "Product"}
                         width={60}
                         height={60}
                         className="rounded-lg object-cover"
                       />
+                      // <Image
+                      //   src={product.productDetails.imageUrl}
+                      //   alt={product.productDetails.name || "Product"}
+                      //   width={60}
+                      //   height={60}
+                      //   className="rounded-lg object-cover"
+                      // />
                     ) : (
                       <div className="w-15 h-15 bg-gray-700 rounded-lg flex items-center justify-center">
                         <Package className="w-6 h-6 text-gray-400" />

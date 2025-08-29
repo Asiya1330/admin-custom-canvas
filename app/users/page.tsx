@@ -117,18 +117,15 @@ function Users() {
   }, []);
 
   const handleEdit = async (user: User) => {
-    try {
-      // Update user logic here
-      console.log('Edit user:', user);
-    } catch (error) {
-      console.error('Error editing user:', error);
-    }
+   console.log(user, "edit not implimented");
   };
 
   if (loading) {
     return (
       <Layout>
-       <Loader />
+        <div className="flex items-center justify-center h-screen">
+          <Loader />
+        </div>
       </Layout>
     );
   }

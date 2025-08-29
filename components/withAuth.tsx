@@ -21,7 +21,9 @@ export function withAuth<P extends object>(
     // Show loading state while checking authentication
     if (loading) {
       return (
-        <Loader />
+        <div className="flex items-center justify-center h-screen">
+          <Loader />
+        </div>
       )
     }
 

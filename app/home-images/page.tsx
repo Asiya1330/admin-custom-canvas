@@ -6,11 +6,12 @@ import {
   getHomeImages,
   addDocument,
   updateDocument,
-  deleteDocument,
 } from "../../services/crud";
 import Image from "next/image";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
+import { Eye } from "lucide-react";
+import ImagePreview from "../../components/ImageModal";
 
 interface HomeImage {
   id: string;
@@ -29,6 +30,42 @@ interface Column {
   width?: string;
 }
 
+export const ImageRender = ({
+  url,
+  containerClassName,
+  className,
+  alt,
+  width,
+  height,
+}: {
+  url: string;
+  containerClassName?: string;
+  className?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+}) => {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className={`relative ${containerClassName}`}>
+      <div
+        className="absolute top-0 right-0 bg-black/50 rounded-lg p-1 cursor-pointer"
+        onClick={() => setOpen(true)}
+      >
+        <Eye className="w-4 h-4 text-white" />
+      </div>
+      <Image
+        width={width || 80}
+        height={height || 64}
+        src={url}
+        alt={alt || ""}
+        className={className ? className : `w-20 h-16 rounded-lg object-cover`}
+      />
+      <ImagePreview open={open} onClose={() => setOpen(false)} imageUrl={url} />
+    </div>
+  );
+};
+
 const columns: Column[] = [
   {
     key: "file_link",
@@ -36,12 +73,15 @@ const columns: Column[] = [
     render: (value: string) => (
       // if value is empty string pass dummy image 1BkfbQKBEvDvXVcSx9fk1_fCiPO1ULBlK
       //https://drive.google.com/uc?export=view&id=FILE_ID
-      <Image
-        width={80}
-        height={64}
-        src={!!value ? value : "/images/dummy_image.png"}
-        alt=""
-        className="w-20 h-16 rounded-lg object-cover"
+
+      <ImageRender
+        url={
+          !!value
+            ? `https://drive.google.com/uc?export=view&id=${
+                value.split("/")[5]
+              }`
+            : "/images/dummy_image.png"
+        }
       />
     ),
   },
@@ -97,6 +137,7 @@ function HomeImages() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<HomeImage | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState<"create" | "edit">("create");
 
   useEffect(() => {
     const fetchHomeImages = async () => {
@@ -113,34 +154,35 @@ function HomeImages() {
     fetchHomeImages();
   }, []);
 
-  const handleEdit = (item: HomeImage) => {
-    setEditingItem(item);
-    setShowModal(true);
-  };
-
   const handleDelete = async (item: HomeImage) => {
-    try {
-      await deleteDocument("home-images", item.id);
-      setHomeImages(homeImages.filter((img) => img.id !== item.id));
-    } catch (error) {
-      console.error("Error deleting home image:", error);
-    }
+    console.log(item, "delete not implimented");
   };
 
   const handleCreate = async (formData: any) => {
     try {
-      const newId = await addDocument("home-images", formData);
+      setLoading(true);
+      const newId = await addDocument("home-images", {
+        title: formData.title,
+        file_link: formData.file_link,
+        aspect_ratio: formData.aspect_ratio,
+        dimensions: formData.dimensions,
+        tags: formData.tags,
+        suggested_locations: formData.suggested_locations,
+      });
       const newImage = { id: newId, ...formData };
       setHomeImages([...homeImages, newImage]);
       setShowModal(false);
     } catch (error) {
       console.error("Error creating home image:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleUpdate = async (formData: any) => {
     if (!editingItem) return;
     try {
+      setLoading(true);
       await updateDocument("home-images", editingItem.id, formData);
       setHomeImages(
         homeImages.map((img) =>
@@ -151,13 +193,17 @@ function HomeImages() {
       setEditingItem(null);
     } catch (error) {
       console.error("Error updating home image:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   if (loading) {
     return (
       <Layout>
-       <Loader />
+        <div className="flex items-center justify-center h-screen">
+          <Loader />
+        </div>
       </Layout>
     );
   }
@@ -170,9 +216,17 @@ function HomeImages() {
           columns={columns}
           title="Home Images Management"
           editable={true}
-          onEdit={handleEdit}
+          onEdit={(item: HomeImage) => {
+            setMode("edit");
+            setEditingItem(item);
+            setShowModal(true);
+          }}
           onDelete={handleDelete}
-          onCreate={() => setShowModal(true)}
+          onCreate={() => {
+            setMode("create");
+            setEditingItem(null);
+            setShowModal(true);
+          }}
         />
 
         {showModal && (
@@ -191,7 +245,7 @@ function HomeImages() {
                     <input
                       type="text"
                       defaultValue={editingItem?.title || ""}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                      className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                       placeholder="Enter image title"
                       id="edit-title"
                     />
@@ -384,7 +438,7 @@ function HomeImages() {
                     <input
                       type="text"
                       defaultValue={editingItem?.file_link || ""}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                      className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                       placeholder="Enter file link"
                       id="edit-file_link"
                     />
@@ -397,7 +451,7 @@ function HomeImages() {
                     <input
                       type="text"
                       defaultValue={editingItem?.aspect_ratio || ""}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                      className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                       placeholder="e.g., 16:9, 4:3"
                       id="edit-aspect_ratio"
                     />
@@ -410,7 +464,7 @@ function HomeImages() {
                     <input
                       type="text"
                       defaultValue={editingItem?.dimensions || ""}
-                      className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                      className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                       placeholder="e.g., 1920x1080"
                       id="edit-dimensions"
                     />
@@ -424,11 +478,12 @@ function HomeImages() {
                     setShowModal(false);
                     setEditingItem(null);
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-4 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
+                  disabled={loading}
                   onClick={async () => {
                     const formData = {
                       title:
@@ -460,15 +515,27 @@ function HomeImages() {
                         editingItem?.suggested_locations || [],
                     };
 
-                    if (editingItem) {
+                    if (editingItem && mode === "edit") {
                       await handleUpdate(formData);
-                    } else {
+                    } else if (mode === "create" && editingItem) {
                       await handleCreate(formData);
                     }
                   }}
-                  className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+                  className={` flex-1 px-4 py-2 text-xs bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors ${
+                    loading ? "opacity-50 cursor-not-allowed " : ""
+                  }`}
                 >
-                  {editingItem ? "Update" : "Create"}
+                  {mode === "edit" ? (
+                    loading ? (
+                      <Loader size={4} />
+                    ) : (
+                      "Update"
+                    )
+                  ) : loading ? (
+                    <Loader size={4} />
+                  ) : (
+                    "Create"
+                  )}
                 </button>
               </div>
             </div>

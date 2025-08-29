@@ -46,7 +46,9 @@ export default function Login() {
   // Show loading while checking authentication
   if (authLoading) {
     return (
-     <Loader />
+      <div className="flex items-center justify-center h-screen">
+        <Loader />
+      </div>
     )
   }
 

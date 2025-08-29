@@ -14,6 +14,7 @@ import moment from "moment";
 import Image from "next/image";
 import { ReactNode } from "react";
 import { User } from "../contexts/AuthContext";
+import { ImageRender } from "@/app/home-images/page";
 
 interface ProcessingData {
   status: string;
@@ -207,13 +208,20 @@ export default function QueueModal({
                         className="flex items-center gap-4 p-3 bg-white/5 rounded-lg"
                       >
                         {product.productDetails?.imageUrl ? (
-                          <Image
-                            src={product.productDetails.imageUrl}
+                          <ImageRender
+                            url={product.productDetails.imageUrl}
                             alt={product.productDetails.name || "Product"}
                             width={60}
                             height={60}
                             className="rounded-lg object-cover"
                           />
+                            // <Image
+                            //   src={product.productDetails.imageUrl}
+                            //   alt={product.productDetails.name || "Product"}
+                            //   width={60}
+                            //   height={60}
+                            //   className="rounded-lg object-cover"
+                            // />
                         ) : (
                           <div className="w-15 h-15 bg-gray-700 rounded-lg flex items-center justify-center">
                             <Package className="w-6 h-6 text-gray-400" />

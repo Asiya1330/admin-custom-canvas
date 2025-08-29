@@ -392,7 +392,7 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
           <button
             onClick={onLoadMore}
             disabled={loading}
-            className="flex items-center space-x-2 px-6 py-3 bg-violet-500/20 text-violet-400 rounded-lg hover:bg-violet-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="text-xs flex items-center space-x-2 px-6 py-3 bg-violet-500/20 text-violet-400 rounded-lg hover:bg-violet-500/30 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {loading ? <span>Loading...</span> : <span>Load More</span>}
           </button>

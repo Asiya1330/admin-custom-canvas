@@ -6,6 +6,7 @@ import { getImages, deleteDocument } from '../../services/crud'
 import Image from 'next/image'
 import { withAuth } from '../../components/withAuth'
 import Loader from '../../components/Loader'
+import { ImageRender } from '../home-images/page'
 
 interface Image {
     id: string
@@ -31,7 +32,7 @@ const columns: Column[] = [
         label: 'Preview',
         width: 'fit-content',
         render: (value: string) => (
-            <Image width={64} height={64} src={value} alt="" className="w-16 h-16 rounded-lg object-cover" />
+            <ImageRender url={value} />
         )
     },
     { key: 'name', label: 'Name', width: '200px' },
@@ -65,26 +66,19 @@ function Images() {
   }, []);
 
   const handleEdit = async (image: Image) => {
-    try {
-      console.log('Edit image:', image);
-    } catch (error) {
-      console.error('Error editing image:', error);
-    }
+    console.log(image, "edit not implimented");
   };
 
   const handleDelete = async (image: Image) => {
-    try {
-      await deleteDocument('images', image.id);
-      setImages(images.filter(img => img.id !== image.id));
-    } catch (error) {
-      console.error('Error deleting image:', error);
-    }
+    console.log(image, "delete not implimented");
   };
 
   if (loading) {
     return (
       <Layout>
-      <Loader />
+        <div className="flex items-center justify-center h-screen">
+          <Loader />
+        </div>
       </Layout>
     );
   }

@@ -4,8 +4,8 @@ import DataTable from "../../components/DataTable";
 import { useState, useEffect } from "react";
 import {
   getSubjects,
-  deleteDocument,
   updateDocument,
+  addDocument,
 } from "../../services/crud";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
@@ -13,7 +13,7 @@ import Loader from "../../components/Loader";
 interface Subject {
   id: string;
   category: string | undefined;
-  subjects: string | string[] | undefined;
+  subjects: string[] | undefined;
 }
 
 interface Column {
@@ -25,14 +25,17 @@ interface Column {
 }
 
 const columns: Column[] = [
-  { key: "category", label: "Category", width:"100px" },
+  { key: "category", label: "Category", width: "100px" },
   {
     key: "subjects",
     label: "Subjects",
-    width:"calc(100vw - 100px)",
-    align:"left",
+    width: "calc(100vw - 100px)",
+    align: "left",
     render: (value: string[] | string | undefined) => (
-      <div className="flex flex-wrap gap-1 overflow-x-auto w-full" style={{ width: "100%" }}>
+      <div
+        className="flex flex-wrap gap-1 overflow-x-auto w-full"
+        style={{ width: "100%" }}
+      >
         {(Array.isArray(value)
           ? value
           : typeof value === "string" && value
@@ -56,24 +59,7 @@ function Subjects() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Subject | null>(null);
   const [loading, setLoading] = useState(true);
-
-  const getTagsArray = (subjects: string) => {
-    if (Array.isArray(subjects)) return subjects;
-    if (typeof subjects === "string") {
-      try {
-        // Try to parse as JSON array
-        const parsed = JSON.parse(subjects);
-        if (Array.isArray(parsed)) return parsed;
-      } catch {
-        // Fallback: split by comma
-        return subjects
-          .split(",")
-          .map((s) => s.trim())
-          .filter(Boolean);
-      }
-    }
-    return [];
-  };
+  const [mode, setMode] = useState<"edit" | "create">("create");
 
   useEffect(() => {
     const fetchSubjects = async () => {
@@ -90,28 +76,43 @@ function Subjects() {
   }, []);
 
   const handleEdit = (item: Subject) => {
+    setMode("edit");
     setEditingItem(item);
     setShowModal(true);
   };
 
   const handleDelete = async (item: Subject) => {
+    console.log(item, "delete not implimented");
+  };
+
+  const handleCreate = async (formData: any) => {
     try {
-      await deleteDocument("subjects", item.id);
-      setSubjects(subjects.filter((s) => s.id !== item.id));
+      await addDocument("subjects", {
+        category: formData.category,
+        subjects: formData.subjects,
+      });
     } catch (error) {
-      console.error("Error deleting subject:", error);
+      console.error("Error creating subject:", error);
     }
+  };
+
+  const tags = (mode: "edit" | "create"): string[] => {
+    if (mode === "edit") {
+      return editingItem?.subjects || []
+    }
+    return editingItem?.subjects || [];
   };
 
   if (loading) {
     return (
       <Layout>
-      <Loader />
+        <div className="flex items-center justify-center h-screen">
+          <Loader />
+        </div>
       </Layout>
     );
   }
 
-  console.log(subjects);
   return (
     <Layout>
       <div className="">
@@ -122,14 +123,22 @@ function Subjects() {
           editable={true}
           onEdit={handleEdit}
           onDelete={handleDelete}
-          onCreate={() => setShowModal(true)}
+          onCreate={() => {
+            setMode("create");
+            setEditingItem({
+              id: "",
+              category: "",
+              subjects: [],
+            });
+            setShowModal(true);
+          }}
         />
 
         {showModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="glass-effect bg-slate-900 rounded-2xl p-6 w-full max-w-md">
               <h2 className="text-xl font-bold text-white mb-6">
-                {editingItem
+                {mode === "edit"
                   ? "Edit Subject Category"
                   : "Add New Subject Category"}
               </h2>
@@ -141,8 +150,17 @@ function Subjects() {
                   </label>
                   <input
                     type="text"
-                    defaultValue={editingItem?.category || ""}
-                    className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                    defaultValue={
+                      mode === "edit" ? editingItem?.category || "" : ""
+                    }
+                    onChange={(e) => {
+                      setEditingItem({  
+                        id: editingItem?.id || "",
+                        category: e.target.value,
+                        subjects: editingItem?.subjects || [],
+                      });
+                    }}
+                    className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                     placeholder="Enter category name"
                   />
                 </div>
@@ -152,39 +170,33 @@ function Subjects() {
                     Subjects (tags)
                   </label>
                   <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                    {(Array.isArray(editingItem?.subjects)
-                      ? editingItem.subjects
-                      : typeof editingItem?.subjects === "string"
-                      ? editingItem.subjects
-                          .split(",")
-                          .map((s) => s.trim().replace(/^\[+|\]+$/g, "")) // Remove brackets
-                          .filter(Boolean)
-                      : []
-                    ).map((tag, idx, arr) => (
-                      <span
-                        key={idx}
-                        className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
-                      >
-                        {tag}
-                        <button
-                          type="button"
-                          className="ml-1 text-violet-400 hover:text-red-400"
-                          onClick={() => {
-                            const newTags = arr.filter((_, i) => i !== idx);
-                            setEditingItem({
-                              id: editingItem?.id || "",
-                              category: editingItem?.category || "",
-                              subjects: newTags.join(", "),
-                            });
-                          }}
+                    { tags(mode).map(
+                      (tag: string, idx: number, arr: string[]) => (
+                        <span
+                          key={idx}
+                          className="flex items-center px-2 py-1 text-xs bg-violet-500/20 text-violet-400 rounded-full"
                         >
-                          ×
-                        </button>
-                      </span>
-                    ))}
+                          {tag}
+                          <button
+                            type="button"
+                            className="ml-1 text-violet-400 hover:text-red-400"
+                            onClick={() => {
+                              const newTags = arr.filter((_, i) => i !== idx);
+                              setEditingItem({
+                                id: editingItem?.id || "",
+                                category: editingItem?.category || "",
+                                subjects: newTags,
+                              });
+                            }}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      )
+                    )}
                     <input
                       type="text"
-                      className="bg-transparent outline-none text-xs text-white flex-1 min-w-[80px]"
+                      className="::placeholder:text-xs bg-transparent outline-none text-xs text-white flex-1 min-w-[80px]"
                       placeholder="Add tag"
                       onKeyDown={(e) => {
                         if (
@@ -192,21 +204,13 @@ function Subjects() {
                           e.currentTarget.value.trim()
                         ) {
                           e.preventDefault();
-                          const currentTags = Array.isArray(
-                            editingItem?.subjects
-                          )
-                            ? editingItem.subjects
-                            : typeof editingItem?.subjects === "string"
-                            ? editingItem.subjects
-                                .split(",")
-                                .map((s) => s.trim())
-                                .filter(Boolean)
-                            : [];
+                          const currentTags = editingItem?.subjects || []
+                           
                           const newTag = e.currentTarget.value.trim();
                           setEditingItem({
                             id: editingItem?.id || "",
                             category: editingItem?.category || "",
-                            subjects: [...currentTags, newTag].join(", "),
+                            subjects: [...currentTags, newTag],
                           });
                           e.currentTarget.value = "";
                         }
@@ -219,38 +223,34 @@ function Subjects() {
               <div className="flex space-x-3 mt-6">
                 <button
                   onClick={() => setShowModal(false)}
-                  className="flex-1 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  className="flex-1 px-2 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={async () => {
-                    if (editingItem) {
-                      // Convert subjects to array of strings
-                      const tagsArray = Array.isArray(editingItem.subjects)
-                        ? editingItem.subjects
-                        : typeof editingItem.subjects === "string"
-                        ? editingItem.subjects
-                            .split(",")
-                            .map((s) => s.trim())
-                            .filter(Boolean)
-                        : [];
+                    if (mode === "edit" && editingItem) {
+                      const tagsArray = editingItem.subjects || []
                       await updateDocument("subjects", editingItem.id, {
                         ...editingItem,
                         subjects: tagsArray,
                       });
                       setSubjects((prev) => {
                         const updatedSubjects = prev.map((s) =>
-                          s.id === editingItem.id ? { ...editingItem, subjects: tagsArray } : s
+                          s.id === editingItem.id
+                            ? { ...editingItem, subjects: tagsArray }
+                            : s
                         );
                         return updatedSubjects;
                       });
+                    } else if (mode === "create" && editingItem) {
+                      handleCreate(editingItem);
                     }
                     setShowModal(false);
                   }}
-                  className="flex-1 px-4 py-2 bg-violet-600 text-white rounded-lg hover:bg-violet-700 transition-colors"
+                  className="flex-1 px-2 py-2 text-xs bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors"
                 >
-                  Save
+                  {mode === "edit" ? "Update" : "Create"}
                 </button>
               </div>
             </div>
@@ -261,4 +261,4 @@ function Subjects() {
   );
 }
 
-export default withAuth(Subjects)
+export default withAuth(Subjects);

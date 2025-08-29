@@ -15,6 +15,7 @@ import { Crown, Search, Package, Calendar, DollarSign } from "lucide-react";
 import { getDocs, collection, query, where } from "firebase/firestore";
 import { db } from "../../../services/firebase";
 import { withAuth } from "@/components/withAuth";
+import { ImageRender } from "../../home-images/page";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -84,9 +85,7 @@ function UserProfilePage({ params }: Props) {
     setIsModalOpen(false);
     setSelectedOrder(null);
   };
-
-  console.log(orders, images);
-
+  
   return (
     <Layout>
       <div className="max-w-6xl mx-auto p-4">
@@ -354,13 +353,21 @@ function UserProfilePage({ params }: Props) {
                   key={img.id}
                   className="bg-white/5 rounded p-2 flex flex-col items-center"
                 >
-                  <Image
+                  <ImageRender
+                    containerClassName="w-full h-24"
+                    alt={img.description || "Generated Image"}
+                    width={100}
+                    height={100}
+                    className="rounded mb-2 object-cover w-full h-24"
+                    url={img.imageUrl || "/default-image.png"}
+                  />
+                  {/* <Image
                     src={img.imageUrl || "/default-image.png"}
                     alt="generated"
                     width={100}
                     height={100}
                     className="rounded mb-2 object-cover w-full h-24"
-                  />
+                  /> */}
                   <p className="text-xs text-gray-300 truncate w-full text-center">
                     {img.description}
                   </p>

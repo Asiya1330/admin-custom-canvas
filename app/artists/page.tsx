@@ -57,6 +57,7 @@ function Artists() {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState<Artist | null>(null);
   const [loading, setLoading] = useState(true);
+  const [mode, setMode] = useState<"edit" | "create">("create");
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -73,24 +74,41 @@ function Artists() {
     fetchArtists();
   }, []);
 
-  const handleEdit = (item: Artist) => {
-    setEditingItem(item);
-    setShowModal(true);
+  const handleCreate = async (formData: any) => {
+    try {
+      setLoading(true);
+      const newId = await addDocument("artists", {
+        name: formData.name,
+        artist_name: formData.artist_name,
+        tags: formData.tags,
+      });
+      const newArtist = { id: newId, ...formData };
+      setArtists([...artists, newArtist]);
+      setShowModal(false);
+    } catch (error) {
+      console.error("Error creating artist:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const tags = (mode: "edit" | "create"): string => {
+    if (mode === "edit") {
+      return editingItem?.tags || "";
+    }
+    return editingItem?.tags || "";
   };
 
   const handleDelete = async (item: Artist) => {
-    try {
-      await deleteDocument("artists", item.id);
-      setArtists(artists.filter((artist) => artist.id !== item.id));
-    } catch (error) {
-      console.error("Error deleting artist:", error);
-    }
+   console.log(item, "delete not implimented");
   };
 
   if (loading) {
     return (
       <Layout>
-        <Loader />
+        <div className="flex items-center justify-center h-screen">
+          <Loader />
+        </div>
       </Layout>
     );
   }
@@ -103,9 +121,17 @@ function Artists() {
           columns={columns}
           title="Artists Management"
           editable={true}
-          onEdit={handleEdit}
+          onEdit={(item: Artist) => {
+            setMode("edit");
+            setEditingItem(item);
+            setShowModal(true);
+          }}
           onDelete={handleDelete}
-          onCreate={() => setShowModal(true)}
+          onCreate={() => {
+            setMode("create");
+            setEditingItem(null);
+            setShowModal(true);
+          }}
         />
 
         <EditModal
@@ -114,7 +140,7 @@ function Artists() {
             setShowModal(false);
             setEditingItem(null);
           }}
-          title={editingItem ? "Edit Artist" : "Add New Artist"}
+          title={mode === "edit" ? "Edit Artist" : "Add New Artist"}
         >
           <div className="space-y-4">
             <div>
@@ -123,8 +149,16 @@ function Artists() {
               </label>
               <input
                 type="text"
-                defaultValue={editingItem?.name || ""}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                defaultValue={mode === "edit" ? editingItem?.name || "" : ""}
+                onChange={(e) => {
+                  setEditingItem({
+                    id: editingItem?.id ?? "",
+                    name: e.target.value,
+                    artist_name: editingItem?.artist_name ?? "",
+                    tags: editingItem?.tags ?? "",
+                  });
+                }}
+                className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                 placeholder="Enter artist name"
                 id="edit-name"
               />
@@ -135,8 +169,18 @@ function Artists() {
               </label>
               <input
                 type="text"
-                defaultValue={editingItem?.artist_name || ""}
-                className="w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white"
+                defaultValue={
+                  mode === "edit" ? editingItem?.artist_name || "" : ""
+                }
+                onChange={(e) => {
+                  setEditingItem({
+                    id: editingItem?.id ?? "",
+                    name: editingItem?.name ?? "",
+                    artist_name: e.target.value,
+                    tags: editingItem?.tags ?? "",
+                  });
+                }}
+                className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                 placeholder="Enter username"
                 id="edit-artist_name"
               />
@@ -146,15 +190,8 @@ function Artists() {
                 Tags (comma separated)
               </label>
               <div className="flex flex-wrap gap-2 bg-white/5 border border-white/10 rounded-lg px-2 py-2">
-                {(typeof editingItem?.tags === "string"
-                  ? editingItem.tags
-                  : Array.isArray(editingItem?.tags)
-                  ? (editingItem.tags as string[]).join(",")
-                  : ""
-                )
+                {tags(mode)
                   .split(",")
-                  .map((t: string) => t.trim())
-                  .filter((t: string) => Boolean(t))
                   .map((tag: string, idx: number, arr: string[]) => (
                     <span
                       key={idx}
@@ -165,14 +202,15 @@ function Artists() {
                         type="button"
                         className="ml-1 text-violet-400 hover:text-red-400"
                         onClick={() => {
-                          const newTags = arr
-                            .filter((_: string, i: number) => i !== idx)
-                            .join(", ");
+                          const newTags = arr.filter(
+                            (_: string, i: number) => i !== idx
+                          );
+
                           setEditingItem({
                             id: editingItem?.id ?? "",
                             name: editingItem?.name ?? "",
                             artist_name: editingItem?.artist_name ?? "",
-                            tags: newTags,
+                            tags: newTags.join(","),
                           });
                         }}
                       >
@@ -205,7 +243,7 @@ function Artists() {
                         id: editingItem?.id ?? "",
                         name: editingItem?.name ?? "",
                         artist_name: editingItem?.artist_name ?? "",
-                        tags: [...currentTags, newTag].join(", "),
+                        tags: [...currentTags, newTag].join(","),
                       });
                       e.currentTarget.value = "";
                     }
@@ -220,11 +258,12 @@ function Artists() {
                 setShowModal(false);
                 setEditingItem(null);
               }}
-              className="px-4 py-2 text-gray-400 hover:text-white transition-colors"
+              className="px-4 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
             >
               Cancel
             </button>
             <button
+              disabled={loading}
               onClick={async () => {
                 const formData = {
                   name:
@@ -236,15 +275,12 @@ function Artists() {
                         "edit-artist_name"
                       ) as HTMLInputElement
                     )?.value || "",
-                  tags: (editingItem?.tags || "")
-                    .split(",")
-                    .map((t) => t.trim())
-                    .filter(Boolean)
-                    .join(", "),
+                  tags: tags(mode),
                 };
 
-                if (editingItem) {
+                if (mode === "edit" && editingItem) {
                   try {
+                    setLoading(true);
                     await updateDocument("artists", editingItem.id, formData);
                     setArtists(
                       artists.map((artist) =>
@@ -258,21 +294,13 @@ function Artists() {
                   } catch (error) {
                     console.error("Error updating artist:", error);
                   }
-                } else {
-                  // Create new artist
-                  try {
-                    const newId = await addDocument("artists", formData);
-                    const newArtist = { id: newId, ...formData };
-                    setArtists([...artists, newArtist]);
-                    setShowModal(false);
-                  } catch (error) {
-                    console.error("Error creating artist:", error);
-                  }
+                } else if (mode === "create" && editingItem) {
+                 handleCreate(formData)
                 }
               }}
-              className="px-4 py-2 bg-violet-500 text-white rounded-lg hover:bg-violet-600 transition-colors"
+              className={`px-4 py-2 text-xs bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors ${loading ? "opacity-50 cursor-not-allowed " : ""}`}
             >
-              {editingItem ? "Update" : "Create"}
+              {mode === "edit" ? loading ? <Loader size={4} /> : "Update" : loading ? <Loader size={4} /> : "Create"}
             </button>
           </div>
         </EditModal>

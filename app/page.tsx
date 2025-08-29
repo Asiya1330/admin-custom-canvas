@@ -79,7 +79,9 @@ function Dashboard() {
   if (statsLoading) {
     return (
       <Layout>
-       <Loader />
+        <div className='flex items-center justify-center h-screen'>
+          <Loader />
+        </div>
       </Layout>
     )
   }
