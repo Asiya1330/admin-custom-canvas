@@ -29,7 +29,12 @@ const columns: Column<Product>[] = [
   {
     key: "imageUrl",
     label: "Preview",
-    render: (value) => <ImageRender url={value} />,
+    render: (value) => <ImageRender url={value}
+    containerClassName='w-16'
+    width={64}
+    height={64}
+    className='w-16 h-16 rounded-lg object-cover'
+    />,
   },
   { key: "name", label: "Product Name" },
   {

@@ -239,7 +239,7 @@ function UserProfilePage({ params }: Props) {
                     </div>
 
                     {/* Product Images Row */}
-                    <div className="flex items-center justify-center space-x-[-10px] mb-2 mt-1">
+                    <div className="flex items-center space-x-[-10px] mb-2 mt-1">
                       {order.products && order.products.length > 0 ? (
                         order.products
                           .slice(0, 4)
@@ -250,7 +250,7 @@ function UserProfilePage({ params }: Props) {
                               style={{ marginLeft: index === 0 ? 0 : -10 }}
                             >
                               {product.productDetails?.imageUrl ? (
-                                <div className="bg-white p-0.5 rounded-md shadow w-9 h-9 flex items-center justify-center">
+                                <div className="border-2 rounded-md shadow w-12 h-12 flex items-center justify-center">
                                   <Image
                                     src={product.productDetails.imageUrl}
                                     alt={
@@ -258,11 +258,11 @@ function UserProfilePage({ params }: Props) {
                                     }
                                     width={28}
                                     height={28}
-                                    className="rounded object-cover w-7 h-7"
+                                    className="rounded object-cover w-12 h-12"
                                   />
                                 </div>
                               ) : (
-                                <div className="bg-white p-0.5 rounded-md shadow w-9 h-9 flex items-center justify-center">
+                                <div className="border-2 rounded-md shadow w-12 h-12 flex items-center justify-center">
                                   <Package className="w-5 h-5 text-gray-400" />
                                 </div>
                               )}
@@ -274,7 +274,7 @@ function UserProfilePage({ params }: Props) {
                             </div>
                           ))
                       ) : (
-                        <div className="bg-white p-0.5 rounded-md shadow w-9 h-9 flex items-center justify-center">
+                        <div className="border-2 rounded-md shadow w-12 h-12 flex items-center">
                           <Package className="w-5 h-5 text-gray-400" />
                         </div>
                       )}
@@ -315,7 +315,7 @@ function UserProfilePage({ params }: Props) {
                     <div className="flex justify-center">
                       <button
                         onClick={() => handleViewOrder(order.id)}
-                        className={`border border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white text-xs font-medium py-1 px-4 rounded-full transition-colors flex items-center gap-1 shadow-sm ${
+                        className={`border border-blue-600 text-blue-600 ${viewLoadingId === order.id ?'':'hover:bg-blue-600 hover:text-white'} text-xs font-medium py-1 px-4 rounded-full transition-colors flex items-center gap-1 shadow-sm ${
                           viewLoadingId === order.id
                             ? "opacity-70 cursor-not-allowed"
                             : ""

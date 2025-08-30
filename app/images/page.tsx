@@ -32,7 +32,9 @@ const columns: Column[] = [
         label: 'Preview',
         width: 'fit-content',
         render: (value: string) => (
-            <ImageRender url={value} />
+            <ImageRender
+            containerClassName='w-20 h-16'
+            url={value} />
         )
     },
     { key: 'name', label: 'Name', width: '200px' },

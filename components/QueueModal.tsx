@@ -211,7 +211,8 @@ export default function QueueModal({
                             alt={product.productDetails.name || "Product"}
                             width={60}
                             height={60}
-                            className="rounded-lg object-cover"
+                            containerClassName='w-16'
+                            className="rounded-lg object-cover w-16 h-16"
                           />
                             // <Image
                             //   src={product.productDetails.imageUrl}

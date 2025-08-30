@@ -1,58 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '../contexts/AuthContext'
 import Layout from '../components/Layout'
 import { Users, Image, ShoppingCart, Package, DollarSign, TrendingUp, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { getDashboardStats, getDashboardTrends } from '../services/crud'
 import { withAuth } from '../components/withAuth'
 import Loader from '../components/Loader'
 
-interface StatCard {
-  title: string
-  value: string
-  icon: any
-  color: string
-  isCurrency?: boolean
-}
-
-const statConfig = [
-  {
-    key: 'totalUsers',
-    title: 'Total Users',
-    icon: Users,
-    color: 'from-blue-500 to-cyan-500'
-  },
-  {
-    key: 'totalImages',
-    title: 'Generated Images',
-    icon: Image,
-    color: 'from-purple-500 to-pink-500'
-  },
-  {
-    key: 'totalOrders',
-    title: 'Total Orders',
-    icon: ShoppingCart,
-    color: 'from-green-500 to-emerald-500'
-  },
-  {
-    key: 'totalProducts',
-    title: 'Products',
-    icon: Package,
-    color: 'from-orange-500 to-red-500'
-  },
-  {
-    key: 'totalEarnings',
-    title: 'Amount Earned',
-    icon: DollarSign,
-    color: 'from-yellow-400 to-yellow-600',
-    isCurrency: true,
-  },
-]
-
 function Dashboard() {
-  const { user } = useAuth()
   const [stats, setStats] = useState<any>(null)
   const [trends, setTrends] = useState<any>(null)
   const [statsLoading, setStatsLoading] = useState(true)
@@ -165,13 +120,6 @@ function Dashboard() {
               </div>
               <span className="text-gray-400 text-xs mt-2">Total Revenue</span>
             </div>
-          </div>
-          {/* Products Card */}
-          <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col items-center justify-center">
-            <span className="text-white font-bold mb-2">Products</span>
-            <Package className="w-10 h-10 text-orange-400 mb-2" />
-            <span className="text-3xl font-bold text-white">{stats.totalProducts ?? '-'}</span>
-            <span className="text-gray-400 text-xs mt-2">Total Products</span>
           </div>
           {/* Recent Activity Card */}
           <div className="bg-gray-900 border border-gray-800 rounded-xl p-5 shadow flex flex-col">

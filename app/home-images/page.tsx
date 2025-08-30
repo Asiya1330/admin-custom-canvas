@@ -38,6 +38,10 @@ const columns: Column[] = [
       //https://drive.google.com/uc?export=view&id=FILE_ID
 
       <ImageRender
+        containerClassName='w-16'
+        width={64}
+        height={64}
+        className='w-16 h-16 rounded-lg object-cover'
         url={
           !!value
             ? `https://drive.google.com/uc?export=view&id=${
