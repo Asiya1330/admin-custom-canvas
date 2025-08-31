@@ -84,6 +84,117 @@ function UserProfilePage({ params }: Props) {
     setIsModalOpen(false);
     setSelectedOrder(null);
   };
+
+  const renderImages = (images: any[], countOfImages: number) => {
+    const count =countOfImages;
+    console.log(images, count);
+
+    if (count === 1) {
+      // Single image
+      return (
+        <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg overflow-hidden bg-gray-100">
+          <Image
+            src={images[0]}
+            alt="Product preview"
+            width={64}
+            height={64}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    } else if (count === 2) {
+      // Two overlapping images
+      return (
+        <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+          <div className="absolute w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-gray-100 shadow-sm">
+            <Image
+              src={images[0]}
+              alt="Product 1"
+              width={48}
+              height={48}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute top-2 left-2 w-10 h-10 sm:w-12 sm:h-12 rounded-lg overflow-hidden bg-gray-100 shadow-md border-2 border-white">
+            <Image
+              src={images[1]}
+              alt="Product 2"
+              width={48}
+              height={48}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      );
+    } else if (count === 3) {
+      // Three images in a triangle layout
+      return (
+        <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+          <div className="absolute w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-gray-100 shadow-sm">
+            <Image
+              src={images[0]}
+              alt="Product 1"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute top-0 right-0 w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-white">
+            <Image
+              src={images[1]}
+              alt="Product 2"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-lg overflow-hidden bg-gray-100 shadow-sm border border-white">
+            <Image
+              src={images[2]}
+              alt="Product 3"
+              width={40}
+              height={40}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
+      );
+    } else {
+      // Four or more images in a 2x2 grid
+      return (
+        <div className="relative w-12 h-12 sm:w-16 sm:h-16">
+          <div className="grid grid-cols-2 gap-0.5 w-full h-full">
+            {images.slice(0, 4).map((image, index) => (
+              <div
+                key={index}
+                className="rounded-md overflow-hidden bg-gray-100 relative"
+              >
+                <Image
+                  src={image}
+                  alt={`Product ${index + 1}`}
+                  width={32}
+                  height={32}
+                  className="w-full h-full object-cover"
+                />
+                {index === 3 && count > 4 && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">
+                      +{count - 4}
+                    </span>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+          {count > 4 && (
+            <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+              {count}
+            </div>
+          )}
+        </div>
+      );
+    }
+  };
   
   return (
     <Layout>
@@ -238,53 +349,9 @@ function UserProfilePage({ params }: Props) {
                       </span>
                     </div>
 
-                    {/* Product Images Row */}
-                    <div className="flex items-center space-x-[-10px] mb-2 mt-1">
-                      {order.products && order.products.length > 0 ? (
-                        order.products
-                          .slice(0, 4)
-                          .map((product: any, index: number) => (
-                            <div
-                              key={index}
-                              className="relative z-10"
-                              style={{ marginLeft: index === 0 ? 0 : -10 }}
-                            >
-                              {product.productDetails?.imageUrl ? (
-                                <div className="border-2 rounded-md shadow w-12 h-12 flex items-center justify-center">
-                                  <Image
-                                    src={product.productDetails.imageUrl}
-                                    alt={
-                                      product.productDetails.name || "Product"
-                                    }
-                                    width={28}
-                                    height={28}
-                                    className="rounded object-cover w-12 h-12"
-                                  />
-                                </div>
-                              ) : (
-                                <div className="border-2 rounded-md shadow w-12 h-12 flex items-center justify-center">
-                                  <Package className="w-5 h-5 text-gray-400" />
-                                </div>
-                              )}
-                              {product.quantity > 1 && (
-                                <div className="absolute -top-1 -right-1 bg-blue-500 text-white text-[10px] rounded-full w-4 h-4 flex items-center justify-center">
-                                  {product.quantity}
-                                </div>
-                              )}
-                            </div>
-                          ))
-                      ) : (
-                        <div className="border-2 rounded-md shadow w-12 h-12 flex items-center">
-                          <Package className="w-5 h-5 text-gray-400" />
-                        </div>
-                      )}
-                      {order.products && order.products.length > 4 && (
-                        <div className="ml-1 text-gray-400 text-xs z-20">
-                          +{order.products.length - 4}
-                        </div>
-                      )}
+                    <div className="">
+                      {renderImages(order.products.map((product: any) => product?.productDetails?.imageUrl || "/images/dummy_image.png" ), order.products.length)}
                     </div>
-
                     {/* Order Details */}
                     <div className="space-y-1 mb-2">
                       <div className="flex items-center justify-between">
