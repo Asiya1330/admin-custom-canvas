@@ -1,7 +1,7 @@
 export const convertImageToJpeg = async (file: File) => {
   return new Promise((resolve, reject) => {
     if (file.type.includes("jpeg")) {
-      reject(new Error("File is already in JPEG format"));
+      resolve(file);
     }
 
     const reader = new FileReader();
