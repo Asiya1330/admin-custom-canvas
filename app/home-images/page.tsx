@@ -6,11 +6,14 @@ import {
   getHomeImages,
   addDocument,
   updateDocument,
+  uploadFileToFirebaseStorage,
 } from "../../services/crud";
 import Image from "next/image";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
 import ImageRender from "@/components/ImageRender";
+import { Upload } from "lucide-react";
+import { toast } from "react-hot-toast";
 
 interface HomeImage {
   id: string;
@@ -38,17 +41,16 @@ const columns: Column[] = [
       //https://drive.google.com/uc?export=view&id=FILE_ID
 
       <ImageRender
-        containerClassName='w-16'
+        containerClassName="w-16"
         width={64}
         height={64}
-        className='w-16 h-16 rounded-lg object-cover'
-        url={
-          !!value
-            ? `https://drive.google.com/uc?export=view&id=${
-                value.split("/")[5]
-              }`
-            : "/images/dummy_image.png"
-        }
+        className="w-16 h-16 rounded-lg object-cover"
+        url={value}
+        // !!value
+        //   ? `https://drive.google.com/uc?export=view&id=${
+        //       value.split("/")[5]
+        //     }`
+        //   : "/images/dummy_image.png"
       />
     ),
   },
@@ -105,6 +107,8 @@ function HomeImages() {
   const [editingItem, setEditingItem] = useState<HomeImage | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"create" | "edit">("create");
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     const fetchHomeImages = async () => {
@@ -127,41 +131,73 @@ function HomeImages() {
 
   const handleCreate = async (formData: any) => {
     try {
-      setLoading(true);
-      const newId = await addDocument("home-images", {
-        title: formData.title,
-        file_link: formData.file_link,
-        aspect_ratio: formData.aspect_ratio,
-        dimensions: formData.dimensions,
-        tags: formData.tags,
-        suggested_locations: formData.suggested_locations,
-      });
-      const newImage = { id: newId, ...formData };
-      setHomeImages([...homeImages, newImage]);
+      setUploading(true);
+      if (
+        !formData.title ||
+        !formData.aspect_ratio ||
+        !formData.dimensions ||
+        !formData.tags.length ||
+        !formData.suggested_locations.length ||
+        !file
+      ) {
+        return toast.error("Please fill all the fields");
+      }
+
+        const fileLink = await uploadFileToFirebaseStorage(file);
+        formData.file_link = fileLink;
+        const newId = await addDocument("home-images", {
+          title: formData.title,
+          file_link: fileLink,
+          aspect_ratio: formData.aspect_ratio,
+          dimensions: formData.dimensions,
+          tags: formData.tags,
+          suggested_locations: formData.suggested_locations,
+        });
+        const newImage = { id: newId, ...{ ...formData, file_link: fileLink } };
+        setHomeImages([...homeImages, newImage]);
       setShowModal(false);
     } catch (error) {
       console.error("Error creating home image:", error);
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
   const handleUpdate = async (formData: any) => {
     if (!editingItem) return;
     try {
-      setLoading(true);
-      await updateDocument("home-images", editingItem.id, formData);
-      setHomeImages(
-        homeImages.map((img) =>
-          img.id === editingItem.id ? { ...img, ...formData } : img
-        )
-      );
+      setUploading(true);
+      if (
+        !formData.title ||
+        !formData.aspect_ratio ||
+        !formData.dimensions ||
+        !formData.tags.length ||
+        !formData.suggested_locations.length ||
+        !file
+      ) {
+        return toast.error("Please fill all the fields");
+      }
+      
+        const fileLink = await uploadFileToFirebaseStorage(file);
+
+        await updateDocument("home-images", editingItem.id, {
+          ...formData,
+          file_link: fileLink,
+        });
+        setHomeImages(
+          homeImages.map((img) =>
+            img.id === editingItem.id
+              ? { ...img, ...{ ...formData, file_link: fileLink } }
+              : img
+          )
+        );
+      
       setShowModal(false);
       setEditingItem(null);
     } catch (error) {
       console.error("Error updating home image:", error);
     } finally {
-      setLoading(false);
+      setUploading(false);
     }
   };
 
@@ -398,7 +434,7 @@ function HomeImages() {
                 </div>
 
                 <div className="space-y-4">
-                  <div>
+                  {/* <div>
                     <label className="block text-gray-300 text-sm mb-2">
                       File Link
                     </label>
@@ -409,6 +445,71 @@ function HomeImages() {
                       placeholder="Enter file link"
                       id="edit-file_link"
                     />
+                  </div> */}
+
+                  <div>
+                    <div className="flex items-center gap-2 border border-white/10 rounded-lg px-2 py-2 flex-col">
+                      <h3>Upload Image</h3>
+                      <input
+                        type="file"
+                        className="hidden ::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
+                        placeholder="Upload image"
+                        id="edit-file_link"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          const allowedExtensions = [
+                            "jpg",
+                            "jpeg",
+                            "png",
+                            "webp",
+                          ];
+                          console.log(file);
+                          if (!file) {
+                            return toast.error(
+                              "Please upload a valid image file"
+                            );
+                          }
+                          console.log(file?.name?.split(".")[1]);
+                          if (
+                            !allowedExtensions.includes(
+                              file?.name?.split(".")[1] || ""
+                            )
+                          ) {
+                            console.log("not allowed");
+                            return toast.error(
+                              "Please upload a valid image file. Allowed extensions: " +
+                                allowedExtensions.join(", ")
+                            );
+                          }
+
+                          setEditingItem({
+                            id: editingItem?.id ?? "",
+                            title: editingItem?.title ?? "",
+                            aspect_ratio: editingItem?.aspect_ratio ?? "",
+                            dimensions: editingItem?.dimensions ?? "",
+                            tags: editingItem?.tags ?? [],
+                            suggested_locations:
+                              editingItem?.suggested_locations ?? [],
+                            file_link: URL.createObjectURL(file),
+                          });
+                          setFile(file);
+                        }}
+                      />
+                      <label
+                        htmlFor="edit-file_link"
+                        className="cursor-pointer"
+                      >
+                        <Upload className="w-4 h-4" />
+                      </label>
+                    </div>
+                    {editingItem?.file_link && (
+                      <Image
+                        src={editingItem?.file_link}
+                        alt="Uploaded Image"
+                        width={100}
+                        height={100}
+                      />
+                    )}
                   </div>
 
                   <div>
@@ -450,7 +551,7 @@ function HomeImages() {
                   Cancel
                 </button>
                 <button
-                  disabled={loading}
+                  disabled={uploading}
                   onClick={async () => {
                     const formData = {
                       title:
@@ -489,16 +590,16 @@ function HomeImages() {
                     }
                   }}
                   className={` flex-1 px-4 py-2 text-xs bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors ${
-                    loading ? "opacity-50 cursor-not-allowed " : ""
+                    uploading ? "opacity-50 cursor-not-allowed " : ""
                   }`}
                 >
                   {mode === "edit" ? (
-                    loading ? (
+                    uploading ? (
                       <Loader size={4} />
                     ) : (
                       "Update"
                     )
-                  ) : loading ? (
+                  ) : uploading ? (
                     <Loader size={4} />
                   ) : (
                     "Create"

@@ -50,7 +50,8 @@ declare module "lucide-react" {
   export const Eye: React.FC<LucideProps>;
   export const Menu: React.FC<LucideProps>;
   export const XIcon: React.FC<LucideProps>;
-
+  export const Upload: React.FC<LucideProps>;
+  
   export type LucideIcon = React.FC<LucideProps>;
 
   // Add any other icons you need here

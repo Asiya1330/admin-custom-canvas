@@ -1,5 +1,6 @@
 'use client'
-import { db } from './firebase';
+import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
+import { db, storage } from './firebase';
 import { 
   collection, 
   doc, 
@@ -18,6 +19,7 @@ import {
   DocumentData,
   WithFieldValue
 } from 'firebase/firestore';
+import { convertImageToJpeg } from '@/utils/helper-functions';
 
 // Pagination interface
 export interface PaginationParams {
@@ -183,6 +185,14 @@ export const deleteDocument = async (collectionName: string, id: string) => {
   }
 };
 
+export const uploadFileToFirebaseStorage = async (file: File) => {
+  console.log(file, "file before conversion");
+  const imageConvertedtoJpeg = await convertImageToJpeg(file);
+  const storageRef = ref(storage, `application-images/${file.name}`);
+  await uploadBytes(storageRef, imageConvertedtoJpeg as any);
+  console.log(imageConvertedtoJpeg, "file after conversion");
+  return getDownloadURL(storageRef);
+};
 
 export const getSingleUser = async (id: string) => {
   const userRef = doc(db, 'users', id);
@@ -316,18 +326,18 @@ export const getImagesPaginated = async (params: PaginationParams): Promise<Pagi
 };
 
 // Products specific operations
-export const getProducts = async () => {
-  try {
-    const querySnapshot = await getDocs(collection(db, 'products'));
-    return querySnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-  } catch (error) {
-    console.error('Error fetching products:', error);
-    return [];
-  }
-};
+// export const getProducts = async () => {
+//   try {
+//     const querySnapshot = await getDocs(collection(db, 'products'));
+//     return querySnapshot.docs.map(doc => ({
+//       id: doc.id,
+//       ...doc.data()
+//     }));
+//   } catch (error) {
+//     console.error('Error fetching products:', error);
+//     return [];
+//   }
+// };
 
 export const getProductsPaginated = async (params: PaginationParams): Promise<PaginatedResult<any>> => {
   try {
@@ -927,10 +937,10 @@ export const getAdminUsers = async () => {
 // Dashboard statistics
 export const getDashboardStats = async () => {
   try {
-    const [users, images, products, orders] = await Promise.all([
+    const [users, images, orders] = await Promise.all([
       getUsers(),
       getImages(),
-      getProducts(),
+      // getProducts(),
       getOrders()
     ]);
 
@@ -940,7 +950,7 @@ export const getDashboardStats = async () => {
     return {
       totalUsers: users.length,
       totalImages: images.length,
-      totalProducts: products.length,
+      // totalProducts: products.length,
       totalOrders: orders.length,
       totalEarnings,
       recentActivity: await getRecentActivity(),

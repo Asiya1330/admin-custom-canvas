@@ -36,7 +36,6 @@ const menuItems: MenuItem[] = [
   { name: 'Dashboard', href: '/', icon: Home },
   { name: 'Users', href: '/users', icon: Users },
   { name: 'Images', href: '/images', icon: Image },
-  { name: 'Products', href: '/products', icon: Package },
   { name: 'Home Images', href: '/home-images', icon: Database, editable: true },
   { name: 'Artists', href: '/artists', icon: Palette, editable: true },
   { name: 'Subjects', href: '/subjects', icon: BookOpen, editable: true },
