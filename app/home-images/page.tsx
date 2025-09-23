@@ -7,6 +7,7 @@ import {
   addDocument,
   updateDocument,
   uploadFileToFirebaseStorage,
+  deleteDocument,
 } from "../../services/crud";
 import Image from "next/image";
 import { withAuth } from "../../components/withAuth";
@@ -109,6 +110,9 @@ function HomeImages() {
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<HomeImage | null>(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchHomeImages = async () => {
@@ -125,8 +129,20 @@ function HomeImages() {
     fetchHomeImages();
   }, []);
 
-  const handleDelete = async (item: HomeImage) => {
-    console.log(item, "delete not implimented");
+  const handleDelete = async () => {
+    try {
+      if(!deletingItem) return;
+      setDeleting(true);
+      await deleteDocument("home-images", deletingItem?.id);
+      setHomeImages(homeImages.filter((img) => img.id !== deletingItem?.id));
+    } catch (error) {
+      console.error("Error deleting home image:", error);
+      toast.error("Error deleting home image");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+      setDeletingItem(null);
+    }
   };
 
   const handleCreate = async (formData: any) => {
@@ -143,18 +159,18 @@ function HomeImages() {
         return toast.error("Please fill all the fields");
       }
 
-        const fileLink = await uploadFileToFirebaseStorage(file);
-        formData.file_link = fileLink;
-        const newId = await addDocument("home-images", {
-          title: formData.title,
-          file_link: fileLink,
-          aspect_ratio: formData.aspect_ratio,
-          dimensions: formData.dimensions,
-          tags: formData.tags,
-          suggested_locations: formData.suggested_locations,
-        });
-        const newImage = { id: newId, ...{ ...formData, file_link: fileLink } };
-        setHomeImages([...homeImages, newImage]);
+      const fileLink = await uploadFileToFirebaseStorage(file);
+      formData.file_link = fileLink;
+      const newId = await addDocument("home-images", {
+        title: formData.title,
+        file_link: fileLink,
+        aspect_ratio: formData.aspect_ratio,
+        dimensions: formData.dimensions,
+        tags: formData.tags,
+        suggested_locations: formData.suggested_locations,
+      });
+      const newImage = { id: newId, ...{ ...formData, file_link: fileLink } };
+      setHomeImages([...homeImages, newImage]);
       setShowModal(false);
     } catch (error) {
       console.error("Error creating home image:", error);
@@ -177,21 +193,21 @@ function HomeImages() {
       ) {
         return toast.error("Please fill all the fields");
       }
-      
-        const fileLink = await uploadFileToFirebaseStorage(file);
+      // TODO: only update file if it is changed
+      const fileLink = await uploadFileToFirebaseStorage(file);
 
-        await updateDocument("home-images", editingItem.id, {
-          ...formData,
-          file_link: fileLink,
-        });
-        setHomeImages(
-          homeImages.map((img) =>
-            img.id === editingItem.id
-              ? { ...img, ...{ ...formData, file_link: fileLink } }
-              : img
-          )
-        );
-      
+      await updateDocument("home-images", editingItem.id, {
+        ...formData,
+        file_link: fileLink,
+      });
+      setHomeImages(
+        homeImages.map((img) =>
+          img.id === editingItem.id
+            ? { ...img, ...{ ...formData, file_link: fileLink } }
+            : img
+        )
+      );
+
       setShowModal(false);
       setEditingItem(null);
     } catch (error) {
@@ -199,6 +215,11 @@ function HomeImages() {
     } finally {
       setUploading(false);
     }
+  };
+
+  const showDeleteModalHandler = (show: boolean, item: HomeImage | null) => {
+    setShowDeleteModal(show);
+    setDeletingItem(item || deletingItem);
   };
 
   if (loading) {
@@ -220,16 +241,19 @@ function HomeImages() {
           title="Home Images Management"
           editable={true}
           onEdit={(item: HomeImage) => {
+            setShowDeleteModal(false);
             setMode("edit");
             setEditingItem(item);
             setShowModal(true);
           }}
-          onDelete={handleDelete}
+          onDelete={(item: HomeImage) => showDeleteModalHandler(true, item)}
           onCreate={() => {
+            setShowDeleteModal(false);
             setMode("create");
             setEditingItem(null);
             setShowModal(true);
           }}
+          disabledDelete={false}
         />
 
         {showModal && (
@@ -604,6 +628,32 @@ function HomeImages() {
                   ) : (
                     "Create"
                   )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {showDeleteModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ">
+            <div className="flex glass-effect rounded-2xl p-6 max-w-2xl max-h-[90vh] overflow-y-auto flex-col gap-4 bg-slate-900">
+              <h2 className="text-xl font-bold text-white ">
+                Delete Home Image
+              </h2>
+              <p className="text-gray-300 mb-4">
+                Are you sure you want to delete this home image?
+              </p>
+              <div className="flex space-x-3">
+                <button 
+                onClick={()=>showDeleteModalHandler(false, null)}
+                className="flex-1 px-4 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                  Cancel
+                </button>
+                <button 
+                onClick={handleDelete}
+                disabled={deleting}
+                className={`flex-1 px-4 ${deleting ? "opacity-50 cursor-not-allowed " : ""} py-2 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors`}>
+                  {deleting ? <Loader size={4} /> : "Delete"}
                 </button>
               </div>
             </div>

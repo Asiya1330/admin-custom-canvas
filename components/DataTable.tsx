@@ -9,6 +9,7 @@ interface Column<T> {
   render?: (value: any, item: T) => React.ReactNode;
   width?: string;
   align?: "left" | "center" | "right";
+  disabledDelete?: boolean;
 }
 
 interface DataTableProps<T> {
@@ -19,6 +20,7 @@ interface DataTableProps<T> {
   onEdit?: (item: T) => void;
   onDelete?: (item: T) => void;
   onCreate?: () => void;
+  disabledDelete?: boolean;
 }
 
 interface PaginatedDataTableProps<T> {
@@ -33,6 +35,7 @@ interface PaginatedDataTableProps<T> {
   hasMore?: boolean;
   loading?: boolean;
   totalCount?: number;
+  disabledDelete?: boolean;
 }
 
 export default function DataTable<T extends { id?: string | number }>({
@@ -43,6 +46,7 @@ export default function DataTable<T extends { id?: string | number }>({
   onEdit,
   onDelete,
   onCreate,
+  disabledDelete = true,
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortField, setSortField] = useState("");
@@ -198,11 +202,12 @@ export default function DataTable<T extends { id?: string | number }>({
                         <Edit size={12} />
                       </button>
                       <button
-                        disabled
-                        className="p-0.5 text-gray-500 cursor-not-allowed opacity-50"
+                        disabled={disabledDelete}
+                        className={`p-0.5 ${disabledDelete ? "text-gray-500 cursor-not-allowed opacity-50 " : "opacity-100 cursor-pointer"}`}
                         title="Delete disabled"
+                        onClick={() => onDelete?.(item)}
                       >
-                        <Trash2 size={12} />
+                        <Trash2 size={12} color={disabledDelete ? "gray" : "#e0115f"} />
                       </button>
                     </div>
                   </td>
@@ -261,6 +266,7 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
   hasMore = false,
   loading = false,
   totalCount = 0,
+  disabledDelete = true,
 }: PaginatedDataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -370,9 +376,9 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
                       </button>
                       {/* //disable delete */}
                       <button
-                        disabled
+                        disabled={disabledDelete}
                         onClick={() => onDelete?.(item)}
-                        className="p-1 text-gray-500 cursor-not-allowed opacity-50"
+                        className={`p-1 ${disabledDelete ? "text-gray-500 cursor-not-allowed opacity-50 " : "opacity-100"}`}
                         title="Delete disabled"
                       >
                         <Trash2 size={14} />

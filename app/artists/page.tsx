@@ -12,6 +12,7 @@ import {
 import EditModal from "../../components/EditModal";
 import { withAuth } from "../../components/withAuth";
 import Loader from "../../components/Loader";
+import { toast } from "react-hot-toast";
 
 interface Artist {
   id: string;
@@ -58,6 +59,11 @@ function Artists() {
   const [editingItem, setEditingItem] = useState<Artist | null>(null);
   const [loading, setLoading] = useState(true);
   const [mode, setMode] = useState<"edit" | "create">("create");
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deletingItem, setDeletingItem] = useState<Artist | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [updating, setUpdating] = useState(false);
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     const fetchArtists = async () => {
@@ -76,7 +82,7 @@ function Artists() {
 
   const handleCreate = async (formData: any) => {
     try {
-      setLoading(true);
+      setCreating(true);
       const newId = await addDocument("artists", {
         name: formData.name,
         artist_name: formData.artist_name,
@@ -88,7 +94,7 @@ function Artists() {
     } catch (error) {
       console.error("Error creating artist:", error);
     } finally {
-      setLoading(false);
+      setCreating(false);
     }
   };
 
@@ -99,8 +105,25 @@ function Artists() {
     return editingItem?.tags || "";
   };
 
-  const handleDelete = async (item: Artist) => {
-   console.log(item, "delete not implimented");
+  const handleDelete = async () => {
+    try {
+      if (!deletingItem) return;
+      setDeleting(true);
+      await deleteDocument("artists", deletingItem?.id);
+      setArtists(artists.filter((a) => a.id !== deletingItem?.id));
+    } catch (error) {
+      console.error("Error deleting artist:", error);
+      toast.error("Error deleting artist");
+    } finally {
+      setDeleting(false);
+      setShowDeleteModal(false);
+      setDeletingItem(null);
+    }
+  };
+
+  const showDeleteModalHandler = (show: boolean, item: Artist | null) => {
+    setShowDeleteModal(show);
+    setDeletingItem(item || deletingItem);
   };
 
   if (loading) {
@@ -115,23 +138,26 @@ function Artists() {
 
   return (
     <Layout>
-      <div className=" ">
+      <div>
         <DataTable
           data={artists}
           columns={columns}
           title="Artists Management"
           editable={true}
           onEdit={(item: Artist) => {
+            showDeleteModalHandler(false, null);
             setMode("edit");
             setEditingItem(item);
             setShowModal(true);
           }}
-          onDelete={handleDelete}
+          onDelete={(item: Artist) => showDeleteModalHandler(true, item)}
           onCreate={() => {
+            showDeleteModalHandler(false, null);
             setMode("create");
             setEditingItem(null);
             setShowModal(true);
           }}
+          disabledDelete={false}
         />
 
         <EditModal
@@ -263,7 +289,7 @@ function Artists() {
               Cancel
             </button>
             <button
-              disabled={loading}
+              disabled={loading || updating || creating}
               onClick={async () => {
                 const formData = {
                   name:
@@ -280,7 +306,7 @@ function Artists() {
 
                 if (mode === "edit" && editingItem) {
                   try {
-                    setLoading(true);
+                    setUpdating(true);
                     await updateDocument("artists", editingItem.id, formData);
                     setArtists(
                       artists.map((artist) =>
@@ -293,18 +319,59 @@ function Artists() {
                     setEditingItem(null);
                   } catch (error) {
                     console.error("Error updating artist:", error);
+                  } finally {
+                    setUpdating(false);
                   }
                 } else if (mode === "create" && editingItem) {
-                 handleCreate(formData)
+                  handleCreate(formData);
                 }
               }}
-              className={`px-4 py-2 text-xs bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors ${loading ? "opacity-50 cursor-not-allowed " : ""}`}
+              className={`px-4 py-2 text-xs bg-violet-600 text-white rounded-md hover:bg-violet-700 transition-colors ${
+                loading || updating || creating ? "opacity-50 cursor-not-allowed " : ""
+              }`}
             >
-              {mode === "edit" ? loading ? <Loader size={4} /> : "Update" : loading ? <Loader size={4} /> : "Create"}
+              {mode === "edit" ? (
+                updating ? (
+                  <Loader size={4} />
+                ) : (
+                  "Update"
+                )
+              ) : creating ? (
+                <Loader size={4} />
+              ) : (
+                "Create"
+              )}
             </button>
           </div>
         </EditModal>
       </div>
+      {showDeleteModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4 ">
+          <div className="flex glass-effect rounded-2xl p-6 max-w-2xl max-h-[90vh] overflow-y-auto flex-col gap-4 bg-slate-900">
+            <h2 className="text-xl font-bold text-white ">Delete Artist</h2>
+            <p className="text-gray-300 mb-4">
+              Are you sure you want to delete this artist?
+            </p>
+            <div className="flex space-x-3">
+              <button
+                onClick={() => showDeleteModalHandler(false, null)}
+                className="flex-1 px-4 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className={`flex-1 px-4 ${
+                  deleting ? "opacity-50 cursor-not-allowed " : ""
+                } py-2 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors`}
+              >
+                {deleting ? <Loader size={4} /> : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Layout>
   );
 }
