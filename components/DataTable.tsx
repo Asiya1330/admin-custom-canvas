@@ -79,6 +79,9 @@ export default function DataTable<T extends { id?: string | number }>({
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
+    if (sortedData.length < startIndex) {
+      return sortedData.slice(0, sortedData.length);
+    }
     return sortedData.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedData, currentPage]);
 
@@ -203,11 +206,18 @@ export default function DataTable<T extends { id?: string | number }>({
                       </button>
                       <button
                         disabled={disabledDelete}
-                        className={`p-0.5 ${disabledDelete ? "text-gray-500 cursor-not-allowed opacity-50 " : "opacity-100 cursor-pointer"}`}
+                        className={`p-0.5 ${
+                          disabledDelete
+                            ? "text-gray-500 cursor-not-allowed opacity-50 "
+                            : "opacity-100 cursor-pointer"
+                        }`}
                         title="Delete disabled"
                         onClick={() => onDelete?.(item)}
                       >
-                        <Trash2 size={12} color={disabledDelete ? "gray" : "#e0115f"} />
+                        <Trash2
+                          size={12}
+                          color={disabledDelete ? "gray" : "#e0115f"}
+                        />
                       </button>
                     </div>
                   </td>
@@ -378,7 +388,11 @@ export function PaginatedDataTable<T extends { id?: string | number }>({
                       <button
                         disabled={disabledDelete}
                         onClick={() => onDelete?.(item)}
-                        className={`p-1 ${disabledDelete ? "text-gray-500 cursor-not-allowed opacity-50 " : "opacity-100"}`}
+                        className={`p-1 ${
+                          disabledDelete
+                            ? "text-gray-500 cursor-not-allowed opacity-50 "
+                            : "opacity-100"
+                        }`}
                         title="Delete disabled"
                       >
                         <Trash2 size={14} />

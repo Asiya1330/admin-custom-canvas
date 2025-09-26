@@ -133,14 +133,6 @@ function HomeImages() {
     fetchHomeImages();
   }, []);
 
-  const handleImageMouseOver = useCallback(() => {
-    setShowUploadIconAboveImage(true);
-  }, []);
-
-  const handleImageMouseLeave = useCallback(() => {
-    setShowUploadIconAboveImage(false);
-  }, []);
-
   const handleDelete = async () => {
     try {
       if (!deletingItem || !deletingItem.id) return;
@@ -205,7 +197,7 @@ function HomeImages() {
       ) {
         return toast.error("Please fill all the fields");
       }
-      // TODO: only update file if it is changed
+      // it will only upload in firebase storage if the file is not uploaded before.
       const fileLink = await uploadFileToFirebaseStorage(file);
 
       await updateDocument("home-images", editingItem.id, {
