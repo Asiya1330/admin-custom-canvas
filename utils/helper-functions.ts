@@ -35,3 +35,17 @@ export const convertImageToJpeg = async (file: File) => {
     reader.readAsDataURL(file);
   });
 };
+
+export const getAspectRatio = (width: number, height: number) => {
+  const divisor = gcd(width, height);
+  return `${width / divisor}:${height / divisor}`;
+};
+
+const gcd = (a: number, b: number): number => (b === 0 ? a : gcd(b, a % b));
+//width = 16, height=9 should return 1:2
+// b!=0 gcd(9, 16 % 9(7)) = gcd(9, 7)
+// b!=0 gcd(7, 9 % 7(2)) = gcd(7, 2)
+// b!=0 gcd(2, 7 % 2(1)) = gcd(2, 1)
+// b!=0 gcd(1, 2 % 1(0)) = gcd(1, 0) = 1
+// return 1
+

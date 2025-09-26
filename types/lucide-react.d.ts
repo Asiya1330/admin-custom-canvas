@@ -51,6 +51,8 @@ declare module "lucide-react" {
   export const Menu: React.FC<LucideProps>;
   export const XIcon: React.FC<LucideProps>;
   export const Upload: React.FC<LucideProps>;
+  export const Camera: React.FC<LucideProps>;
+
   
   export type LucideIcon = React.FC<LucideProps>;
 

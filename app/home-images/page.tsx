@@ -1,7 +1,7 @@
 "use client";
 import Layout from "../../components/Layout";
 import DataTable from "../../components/DataTable";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   getHomeImages,
   addDocument,
@@ -15,15 +15,17 @@ import Loader from "../../components/Loader";
 import ImageRender from "@/components/ImageRender";
 import { Upload } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { getAspectRatio } from "@/utils/helper-functions";
+import { Camera } from "lucide-react";
 
 interface HomeImage {
-  id: string;
-  title: string;
-  file_link: string;
-  aspect_ratio: string;
-  dimensions: string;
-  tags: string[];
-  suggested_locations: string[];
+  id: string | undefined;
+  title: string | undefined;
+  file_link: string | undefined;
+  aspect_ratio: string | undefined;
+  dimensions: string | undefined;
+  tags: string[] | undefined;
+  suggested_locations: string[] | undefined;
 }
 
 interface Column {
@@ -113,6 +115,8 @@ function HomeImages() {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deletingItem, setDeletingItem] = useState<HomeImage | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [showUploadIconAboveImage, setShowUploadIconAboveImage] =
+    useState(false);
 
   useEffect(() => {
     const fetchHomeImages = async () => {
@@ -129,9 +133,17 @@ function HomeImages() {
     fetchHomeImages();
   }, []);
 
+  const handleImageMouseOver = useCallback(() => {
+    setShowUploadIconAboveImage(true);
+  }, []);
+
+  const handleImageMouseLeave = useCallback(() => {
+    setShowUploadIconAboveImage(false);
+  }, []);
+
   const handleDelete = async () => {
     try {
-      if(!deletingItem) return;
+      if (!deletingItem || !deletingItem.id) return;
       setDeleting(true);
       await deleteDocument("home-images", deletingItem?.id);
       setHomeImages(homeImages.filter((img) => img.id !== deletingItem?.id));
@@ -180,7 +192,7 @@ function HomeImages() {
   };
 
   const handleUpdate = async (formData: any) => {
-    if (!editingItem) return;
+    if (!editingItem || !editingItem.id) return;
     try {
       setUploading(true);
       if (
@@ -458,26 +470,11 @@ function HomeImages() {
                 </div>
 
                 <div className="space-y-4">
-                  {/* <div>
-                    <label className="block text-gray-300 text-sm mb-2">
-                      File Link
-                    </label>
-                    <input
-                      type="text"
-                      defaultValue={editingItem?.file_link || ""}
-                      className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
-                      placeholder="Enter file link"
-                      id="edit-file_link"
-                    />
-                  </div> */}
-
                   <div>
-                    <div className="flex items-center gap-2 border border-white/10 rounded-lg px-2 py-2 flex-col">
-                      <h3>Upload Image</h3>
+                    <div className="flex items-center gap-2  rounded-lg flex-col">
                       <input
                         type="file"
-                        className="hidden ::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
-                        placeholder="Upload image"
+                        className="hidden"
                         id="edit-file_link"
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
@@ -493,10 +490,9 @@ function HomeImages() {
                               "Please upload a valid image file"
                             );
                           }
-                          console.log(file?.name?.split(".")[1]);
                           if (
                             !allowedExtensions.includes(
-                              file?.name?.split(".")[1] || ""
+                              file?.type?.split("/")[1]
                             )
                           ) {
                             console.log("not allowed");
@@ -506,34 +502,57 @@ function HomeImages() {
                             );
                           }
 
-                          setEditingItem({
-                            id: editingItem?.id ?? "",
-                            title: editingItem?.title ?? "",
-                            aspect_ratio: editingItem?.aspect_ratio ?? "",
-                            dimensions: editingItem?.dimensions ?? "",
-                            tags: editingItem?.tags ?? [],
-                            suggested_locations:
-                              editingItem?.suggested_locations ?? [],
-                            file_link: URL.createObjectURL(file),
-                          });
+                          const img = new window.Image();
+                          img.src = URL.createObjectURL(file);
+                          img.onload = () => {
+                            const widthOfImageInPx = img.naturalWidth;
+                            const heightOfImageInPx = img.naturalHeight;
+                            const aspectRatio = getAspectRatio(
+                              widthOfImageInPx,
+                              heightOfImageInPx
+                            );
+                            setEditingItem({
+                              id: editingItem?.id ?? "",
+                              title: editingItem?.title ?? "",
+                              aspect_ratio: aspectRatio,
+                              dimensions: `${widthOfImageInPx}x${heightOfImageInPx}`,
+                              tags: editingItem?.tags ?? [],
+                              suggested_locations:
+                                editingItem?.suggested_locations ?? [],
+                              file_link: URL.createObjectURL(file),
+                            });
+                          };
                           setFile(file);
                         }}
                       />
                       <label
                         htmlFor="edit-file_link"
-                        className="cursor-pointer"
+                        className="cursor-pointer relative group"
+                        onMouseEnter={() => setShowUploadIconAboveImage(true)}
+                        onMouseLeave={() => setShowUploadIconAboveImage(false)}
                       >
-                        <Upload className="w-4 h-4" />
+                        {/* Overlay that appears on hover */}
+                        {showUploadIconAboveImage && editingItem?.file_link && (
+                          <div className="absolute inset-0 bg-black/50 flex items-center justify-center cursor-pointer z-10 rounded-lg">
+                            <Camera className="w-6 h-6 text-white" />
+                          </div>
+                        )}
+
+                        {editingItem?.file_link ? (
+                          <Image
+                            src={editingItem?.file_link}
+                            alt="Uploaded Image"
+                            width={200}
+                            height={200}
+                            className="rounded-lg object-cover max-w-[100px] max-h-[100px] w-20 h-20 border border-white/10"
+                          />
+                        ) : (
+                          <div className="w-32 h-32 border-2 border-dashed border-gray-400 rounded-lg flex items-center justify-center">
+                            <Upload className="w-8 h-8 text-gray-400" />
+                          </div>
+                        )}
                       </label>
                     </div>
-                    {editingItem?.file_link && (
-                      <Image
-                        src={editingItem?.file_link}
-                        alt="Uploaded Image"
-                        width={100}
-                        height={100}
-                      />
-                    )}
                   </div>
 
                   <div>
@@ -542,10 +561,22 @@ function HomeImages() {
                     </label>
                     <input
                       type="text"
-                      defaultValue={editingItem?.aspect_ratio || ""}
+                      value={editingItem?.aspect_ratio || ""}
                       className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                       placeholder="e.g., 16:9, 4:3"
                       id="edit-aspect_ratio"
+                      onChange={(e) => {
+                        setEditingItem({
+                          id: editingItem?.id ?? "",
+                          suggested_locations:
+                            editingItem?.suggested_locations ?? [],
+                          title: editingItem?.title ?? "",
+                          file_link: editingItem?.file_link ?? "",
+                          dimensions: editingItem?.dimensions ?? "",
+                          tags: editingItem?.tags ?? [],
+                          aspect_ratio: e.target.value,
+                        });
+                      }}
                     />
                   </div>
 
@@ -555,10 +586,22 @@ function HomeImages() {
                     </label>
                     <input
                       type="text"
-                      defaultValue={editingItem?.dimensions || ""}
+                      value={editingItem?.dimensions || ""}
                       className="::placeholder:text-xs w-full px-3 py-2 bg-white/5 border border-white/10 rounded-lg focus:outline-none focus:border-violet-400 text-white text-xs"
                       placeholder="e.g., 1920x1080"
                       id="edit-dimensions"
+                      onChange={(e) => {
+                        setEditingItem({
+                          id: editingItem?.id ?? "",
+                          suggested_locations:
+                            editingItem?.suggested_locations ?? [],
+                          title: editingItem?.title ?? "",
+                          file_link: editingItem?.file_link ?? "",
+                          dimensions: e.target.value,
+                          tags: editingItem?.tags ?? [],
+                          aspect_ratio: editingItem?.aspect_ratio ?? "",
+                        });
+                      }}
                     />
                   </div>
                 </div>
@@ -644,15 +687,19 @@ function HomeImages() {
                 Are you sure you want to delete this home image?
               </p>
               <div className="flex space-x-3">
-                <button 
-                onClick={()=>showDeleteModalHandler(false, null)}
-                className="flex-1 px-4 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
+                <button
+                  onClick={() => showDeleteModalHandler(false, null)}
+                  className="flex-1 px-4 py-2 text-xs bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors"
+                >
                   Cancel
                 </button>
-                <button 
-                onClick={handleDelete}
-                disabled={deleting}
-                className={`flex-1 px-4 ${deleting ? "opacity-50 cursor-not-allowed " : ""} py-2 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors`}>
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className={`flex-1 px-4 ${
+                    deleting ? "opacity-50 cursor-not-allowed " : ""
+                  } py-2 text-xs bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors`}
+                >
                   {deleting ? <Loader size={4} /> : "Delete"}
                 </button>
               </div>
